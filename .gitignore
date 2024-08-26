@@ -1,0 +1,15 @@
+# python cache and virtual environment
+.venv/
+__pycache__/
+
+# program output
+*.cache
+
+# build files
+dist/
+build/
+*.egg-info/
+
+# development test files
+test.py
+test.json
