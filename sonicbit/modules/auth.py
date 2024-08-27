@@ -3,7 +3,7 @@ import logging
 from requests import Session, request
 
 from sonicbit.constants import Constants
-from sonicbit.handlers.token_file import TokenHandler, TokenFileHandler
+from sonicbit.handlers.token_file import TokenHandler
 from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import AuthResponse
 
@@ -15,8 +15,8 @@ class Auth(SonicBitBase):
         self,
         email: str,
         password: str,
-        token: str = None,
-        token_handler: TokenHandler = TokenFileHandler(),
+        token: str | None,
+        token_handler: TokenHandler,
     ):
         logger.debug("Initializing Auth")
         self.session = Session()

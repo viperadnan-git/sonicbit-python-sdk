@@ -1,7 +1,7 @@
 import json
 import os
 
-from sonicbit.types import AuthResponse
+from sonicbit.types.auth_response import AuthResponse
 
 
 class TokenHandler:
@@ -9,10 +9,10 @@ class TokenHandler:
         pass
 
     def write(self, email: str, auth: AuthResponse) -> None:
-        print(f"{email} sesion is {auth.sesion}")
+        print(f"{email}'s token is {auth.token}")
 
     def read(self, email: str) -> str | None:
-        return input(f"Enter {email} sesion: ")
+        return input(f"Enter {email}'s token: ")
 
 
 class TokenFileHandler(TokenHandler):
