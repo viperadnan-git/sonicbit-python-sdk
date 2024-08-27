@@ -4,15 +4,14 @@ import logging
 from requests import Session
 
 from sonicbit.enums import FileCommand
+from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import File as FileType
 from sonicbit.types import FileList, PathInfo
 
 logger = logging.getLogger(__name__)
 
 
-class File:
-    session: Session
-
+class File(SonicBitBase):
     def list_files(self, path: PathInfo = PathInfo.root()) -> FileList:
         logger.debug(f"Listing files in {path.path}")
         params = {

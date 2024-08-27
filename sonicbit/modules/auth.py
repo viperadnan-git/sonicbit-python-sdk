@@ -3,19 +3,20 @@ import logging
 from requests import Session, request
 
 from sonicbit.constants import Constants
-from sonicbit.handlers.token_file import BaseTokenHandler, TokenFileHandler
+from sonicbit.handlers.token_file import TokenHandler, TokenFileHandler
+from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import AuthResponse
 
 logger = logging.getLogger(__name__)
 
 
-class Auth:
+class Auth(SonicBitBase):
     def __init__(
         self,
         email: str,
         password: str,
         token: str = None,
-        token_handler: BaseTokenHandler = TokenFileHandler(),
+        token_handler: TokenHandler = TokenFileHandler(),
     ):
         logger.debug("Initializing Auth")
         self.session = Session()
@@ -27,7 +28,7 @@ class Auth:
         self.session.headers.update({"Authorization": f"Bearer {token}"})
 
     def get_token(
-        self, email: str, password: str, token_handler: BaseTokenHandler
+        self, email: str, password: str, token_handler: TokenHandler
     ) -> str:
         logger.debug("Getting token")
         token = token_handler.read(email)

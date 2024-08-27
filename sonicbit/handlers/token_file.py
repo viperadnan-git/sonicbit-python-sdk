@@ -4,7 +4,7 @@ import os
 from sonicbit.types import AuthResponse
 
 
-class BaseTokenHandler:
+class TokenHandler:
     def __init__(self):
         pass
 
@@ -15,7 +15,7 @@ class BaseTokenHandler:
         return input(f"Enter {email} sesion: ")
 
 
-class TokenFileHandler(BaseTokenHandler):
+class TokenFileHandler(TokenHandler):
     def __init__(self, path: str = ".sonicbit.cache"):
         self.path = os.path.abspath(path)
         super().__init__()

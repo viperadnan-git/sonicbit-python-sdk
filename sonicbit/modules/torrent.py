@@ -5,14 +5,13 @@ from requests import Session
 
 from sonicbit.enums import TorrentCommand
 from sonicbit.error import SonicbitError
+from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import PathInfo, TorrentDetails, TorrentList
 
 logger = logging.getLogger(__name__)
 
 
-class Torrent:
-    session: Session
-
+class Torrent(SonicBitBase):
     def add_torrent(
         self,
         uri: str | List[str],

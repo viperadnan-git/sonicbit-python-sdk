@@ -4,15 +4,14 @@ from requests import Session
 
 from sonicbit.enums import RemoteDownloadCommand
 from sonicbit.error.error import SonicbitError
+from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import RemoteTaskList
 from sonicbit.types.path_info import PathInfo
 
 logger = logging.getLogger(__name__)
 
 
-class RemoteDownload:
-    session: Session
-
+class RemoteDownload(SonicBitBase):
     def add_remote_download(self, url: str, path: PathInfo) -> bool:
         logger.debug(f"Adding remote download {url} to {path.path}")
 

@@ -3,15 +3,14 @@ import logging
 from requests import Session
 
 from sonicbit.error.error import SonicbitError
+from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import UserDetails
 from sonicbit.types.storage_details import StorageDetails
 
 logger = logging.getLogger(__name__)
 
 
-class User:
-    session: Session
-
+class User(SonicBitBase):
     def get_user_details(self) -> UserDetails:
         logger.debug("Getting user details")
         response = self.session.post(self.url("/get/user/details"))

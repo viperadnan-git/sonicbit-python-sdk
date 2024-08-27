@@ -1,2 +1,7 @@
+from requests import Session
+
+
 class SonicBitBase:
-    pass
+    """Base class for all SonicBit modules."""
+    
+    session = Session
