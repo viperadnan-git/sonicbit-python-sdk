@@ -27,9 +27,7 @@ class Auth(SonicBitBase):
 
         self.session.headers.update({"Authorization": f"Bearer {token}"})
 
-    def get_token(
-        self, email: str, password: str, token_handler: TokenHandler
-    ) -> str:
+    def get_token(self, email: str, password: str, token_handler: TokenHandler) -> str:
         logger.debug("Getting token")
         token = token_handler.read(email)
         if token:

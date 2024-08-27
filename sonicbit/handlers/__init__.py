@@ -1,4 +1,4 @@
-from .token_file import TokenHandler, TokenFileHandler
+from .token_file import TokenFileHandler, TokenHandler
 
 __all__ = [
     "TokenHandler",

@@ -56,7 +56,7 @@ The `token_handler` should implement the following methods:
 The `token_handler` is optional and will default to a `TokenFileHandler` if not provided.
 
 > [!TIP]  
-> You can use the `BaseTokenHandler` class to store and update tokens in a database or other storage mechanism. Simply implement the `read` and `write` methods and pass an instance of your custom class to the `SonicBit` constructor. This will allow you to store tokens in a secure location and easily update them as needed.
+> You can use the `TokenHandler` class to store and update tokens in a database or other storage mechanism. Simply implement the `read` and `write` methods and pass an instance of your custom class to the `SonicBit` constructor. This will allow you to store tokens in a secure location and easily update them as needed.
 
 ### User Module
 

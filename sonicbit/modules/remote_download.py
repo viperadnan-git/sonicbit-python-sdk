@@ -1,6 +1,5 @@
 import logging
 
-from requests import Session
 
 from sonicbit.enums import RemoteDownloadCommand
 from sonicbit.error.error import SonicbitError
@@ -34,9 +33,6 @@ class RemoteDownload(SonicBitBase):
         response = self.session.post(
             self.url("/remote_download/task/list"), params=params
         )
-
-        with open("test.json", "w") as f:
-            f.write(response.text)
 
         return RemoteTaskList.from_response(self, response)
 

@@ -30,32 +30,35 @@ class TorrentList:
         torrents_data = json_data["list"]
         info_data = json_data["info"]
 
-        torrents = {
-            key: Torrent(
-                client=client,
-                name=torrent_data["name"],
-                hash=torrent_data["hash"],
-                size=int(torrent_data["sizeBytes"]),
-                progress=int(torrent_data["percentComplete"]),
-                download_rate_value=torrent_data["dlRateValue"],
-                download_rate_unit=torrent_data["dlRateUnit"],
-                upload_rate_value=(
-                    torrent_data["upRateValue"]
-                    if torrent_data.get("upRateValue", "N/A") != "N/A"
-                    else None
-                ),
-                upload_rate_unit=torrent_data.get("uploadRateUnit"),
-                peers_status=torrent_data["peersStatus"],
-                seeds_status=torrent_data["seedsStatus"],
-                date_added=datetime.fromtimestamp(int(torrent_data["t_added"])),
-                is_multi_file=torrent_data["isMultiFile"] == "1",
-                status=torrent_data["status"],
-                is_private=torrent_data["isPrivate"] != "Public",
-                in_cache=torrent_data["in_cache"],
-                raw=torrent_data,
-            )
-            for key, torrent_data in torrents_data.items()
-        }
+        if torrents_data:
+            torrents = {
+                key: Torrent(
+                    client=client,
+                    name=torrent_data["name"],
+                    hash=torrent_data["hash"],
+                    size=int(torrent_data["sizeBytes"]),
+                    progress=int(torrent_data["percentComplete"]),
+                    download_rate_value=torrent_data["dlRateValue"],
+                    download_rate_unit=torrent_data["dlRateUnit"],
+                    upload_rate_value=(
+                        torrent_data["upRateValue"]
+                        if torrent_data.get("upRateValue", "N/A") != "N/A"
+                        else None
+                    ),
+                    upload_rate_unit=torrent_data.get("uploadRateUnit"),
+                    peers_status=torrent_data["peersStatus"],
+                    seeds_status=torrent_data["seedsStatus"],
+                    date_added=datetime.fromtimestamp(int(torrent_data["t_added"])),
+                    is_multi_file=torrent_data["isMultiFile"] == "1",
+                    status=torrent_data["status"],
+                    is_private=torrent_data["isPrivate"] != "Public",
+                    in_cache=torrent_data["in_cache"],
+                    raw=torrent_data,
+                )
+                for key, torrent_data in torrents_data.items()
+            }
+        else:
+            torrents = {}
 
         info = TorrentInfo(
             download_rate=int(info_data["downloadRate"]),

@@ -1,6 +1,5 @@
 import logging
 
-from requests import Session
 
 from sonicbit.error.error import SonicbitError
 from sonicbit.modules.base import SonicBitBase

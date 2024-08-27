@@ -1,7 +1,6 @@
 import json
 import logging
 
-from requests import Session
 
 from sonicbit.enums import FileCommand
 from sonicbit.modules.base import SonicBitBase

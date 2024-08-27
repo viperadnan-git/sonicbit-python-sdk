@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-from requests import Session
 
 from sonicbit.enums import TorrentCommand
 from sonicbit.error import SonicbitError
@@ -49,9 +48,6 @@ class Torrent(SonicBitBase):
         logger.debug("Listing torrents")
 
         response = self.session.post(self.url("/app/seedbox/torrent/list"))
-
-        with open("test.json", "w") as f:
-            f.write(response.text)
 
         return TorrentList.from_response(self, response)
 
