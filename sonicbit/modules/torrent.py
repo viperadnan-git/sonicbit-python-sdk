@@ -1,10 +1,9 @@
 import logging
 from typing import List
 
-
+from sonicbit.base import SonicBitBase
 from sonicbit.enums import TorrentCommand
 from sonicbit.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import PathInfo, TorrentDetails, TorrentList
 
 logger = logging.getLogger(__name__)

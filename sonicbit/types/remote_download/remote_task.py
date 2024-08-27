@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from sonicbit.modules.base import SonicBitBase
+from sonicbit.base import SonicBitBase
 from sonicbit.types.path_info import PathInfo
 from sonicbit.utils import EnhancedJSONEncoder
 

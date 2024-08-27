@@ -1,9 +1,8 @@
 import logging
 
-
+from sonicbit.base import SonicBitBase
 from sonicbit.enums import RemoteDownloadCommand
 from sonicbit.error.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import RemoteTaskList
 from sonicbit.types.path_info import PathInfo
 

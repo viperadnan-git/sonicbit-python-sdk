@@ -4,8 +4,8 @@ from datetime import datetime
 
 from requests import Response
 
+from sonicbit.base import SonicBitBase
 from sonicbit.error.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types.path_info import PathInfo
 from sonicbit.utils import EnhancedJSONEncoder
 

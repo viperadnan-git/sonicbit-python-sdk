@@ -5,8 +5,8 @@ from typing import List
 from requests import Response
 from requests.exceptions import JSONDecodeError
 
+from sonicbit.base import SonicBitBase
 from sonicbit.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types.file import File
 from sonicbit.utils import EnhancedJSONEncoder
 

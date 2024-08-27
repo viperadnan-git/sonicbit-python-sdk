@@ -5,8 +5,8 @@ from typing import Dict
 
 from requests import Response
 
+from sonicbit.base import SonicBitBase
 from sonicbit.error.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types.torrent.torrent import Torrent
 from sonicbit.types.torrent.torrent_info import TorrentInfo
 from sonicbit.utils import EnhancedJSONEncoder

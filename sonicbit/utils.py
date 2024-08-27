@@ -2,7 +2,7 @@ import dataclasses
 import json
 from datetime import datetime
 
-from sonicbit.modules.base import SonicBitBase
+from sonicbit.base import SonicBitBase
 
 
 def dataclass_dict_factory(kv_pairs) -> dict:

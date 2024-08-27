@@ -1,4 +1,5 @@
-from sonicbit.handlers.token_file import TokenFileHandler, TokenHandler
+from sonicbit.handlers.token_file_handler import TokenFileHandler
+from sonicbit.handlers.token_handler import TokenHandler
 from sonicbit.modules.auth import Auth
 from sonicbit.modules.file import File
 from sonicbit.modules.remote_download import RemoteDownload

@@ -1,8 +1,7 @@
 import logging
 
-
+from sonicbit.base import SonicBitBase
 from sonicbit.error.error import SonicbitError
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import UserDetails
 from sonicbit.types.storage_details import StorageDetails
 

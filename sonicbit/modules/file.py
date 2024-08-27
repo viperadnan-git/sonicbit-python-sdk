@@ -1,9 +1,8 @@
 import json
 import logging
 
-
+from sonicbit.base import SonicBitBase
 from sonicbit.enums import FileCommand
-from sonicbit.modules.base import SonicBitBase
 from sonicbit.types import File as FileType
 from sonicbit.types import FileList, PathInfo
 

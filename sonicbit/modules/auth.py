@@ -2,9 +2,9 @@ import logging
 
 from requests import Session, request
 
+from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
-from sonicbit.handlers.token_file import TokenHandler
-from sonicbit.modules.base import SonicBitBase
+from sonicbit.handlers.token_handler import TokenHandler
 from sonicbit.types import AuthResponse
 
 logger = logging.getLogger(__name__)
