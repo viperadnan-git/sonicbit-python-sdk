@@ -3,7 +3,7 @@ from typing import List
 
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import TorrentCommand
-from sonicbit.error import SonicbitError
+from sonicbit.error import SonicBitError
 from sonicbit.types import PathInfo, TorrentDetails, TorrentList
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class Torrent(SonicBitBase):
                 added_torrents.append(uri[index])
 
         if len(added_torrents) == 0:
-            raise SonicbitError("Failed to add torrent")
+            raise SonicBitError("Failed to add torrent")
 
         return added_torrents
 
@@ -79,7 +79,7 @@ class Torrent(SonicBitBase):
         json_data = response.json()
 
         if "message" in json_data:
-            raise SonicbitError(f"Failed to delete torrent: {json_data['message']}")
+            raise SonicBitError(f"Failed to delete torrent: {json_data['message']}")
 
         deleted_hash = []
         for key, value in json_data.items():
@@ -88,6 +88,6 @@ class Torrent(SonicBitBase):
                     deleted_hash.append(key)
 
         if len(deleted_hash) == 0:
-            raise SonicbitError("Failed to delete torrent")
+            raise SonicBitError("Failed to delete torrent")
 
         return deleted_hash

@@ -5,7 +5,7 @@ from datetime import datetime
 from requests import Response
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.types.path_info import PathInfo
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -23,12 +23,12 @@ class RemoteTaskList:
         json_data = response.json()
 
         if "message" in json_data:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to get remote download list: {json_data['message']}"
             )
 
         if not json_data.get("success", False):
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to get remote download list: {json_data['msg']}"
             )
 

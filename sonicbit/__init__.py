@@ -1,6 +1,6 @@
 import logging
 
-from sonicbit.sonicbit import SonicBit
+from sonicbit.client import SonicBit
 
 __version__ = "0.2.1"
 __all__ = ["SonicBit"]

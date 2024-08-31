@@ -4,7 +4,7 @@ from typing import List
 
 from requests import Response
 
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.types.torrent.torrent_file import TorrentFile
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -19,7 +19,7 @@ class TorrentDetails:
         json_data = response.json()
 
         if "message" in json_data:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to get torrent details: {json_data['message']}"
             )
 

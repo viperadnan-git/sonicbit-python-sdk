@@ -3,7 +3,7 @@
 An unofficial Python SDK for SonicBit which uses the internal API to interact with the application.
 
 > [!WARNING]  
-> This SDK is provided as-is and is not officially supported by Sonicbit. The author is not responsible for any damages or losses caused by the use of this SDK. Use it at your own risk. Please use it responsibly and with the understanding that it may not be fully functional or reliable. Check Sonicbit's terms of service for more information.
+> This SDK is provided as-is and is not officially supported by SonicBit. The author is not responsible for any damages or losses caused by the use of this SDK. Use it at your own risk. Please use it responsibly and with the understanding that it may not be fully functional or reliable. Check SonicBit's terms of service for more information.
 
 ## Installation
 

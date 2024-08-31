@@ -6,7 +6,7 @@ from typing import Dict
 from requests import Response
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.types.torrent.torrent import Torrent
 from sonicbit.types.torrent.torrent_info import TorrentInfo
 from sonicbit.utils import EnhancedJSONEncoder
@@ -25,7 +25,7 @@ class TorrentList:
 
         error_message = json_data.get("message")
         if error_message:
-            raise SonicbitError(f"Failed to get torrent list: {error_message}")
+            raise SonicBitError(f"Failed to get torrent list: {error_message}")
 
         torrents_data = json_data["list"]
         info_data = json_data["info"]

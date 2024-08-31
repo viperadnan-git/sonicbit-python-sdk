@@ -1,7 +1,7 @@
 import logging
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.types import UserDetails
 from sonicbit.types.storage_details import StorageDetails
 
@@ -29,6 +29,6 @@ class User(SonicBitBase):
         error_message = json_data.get("message")
 
         if error_message:
-            raise SonicbitError(f"Failed to clear storage: {error_message}")
+            raise SonicBitError(f"Failed to clear storage: {error_message}")
 
         return json_data["success"]

@@ -4,7 +4,7 @@ import requests
 
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class Signup(SonicBitBase):
                 Signup.submit_otp(otp)
             return True
         else:
-            raise SonicbitError(f"Failed to signup: {response.get('msg', response)}")
+            raise SonicBitError(f"Failed to signup: {response.get('msg', response)}")
 
     @staticmethod
     def submit_otp(otp: str):
@@ -40,7 +40,7 @@ class Signup(SonicBitBase):
         otp = otp.strip()
 
         if not otp.isdigit() and len(otp) == 6:
-            raise SonicbitError("OTP must be a 6 digit number")
+            raise SonicBitError("OTP must be a 6 digit number")
 
         data = {"code": otp.strip(), "type": "registration", "platform": "Web_Dash_V4"}
 
@@ -56,7 +56,7 @@ class Signup(SonicBitBase):
             Signup._complete_tutorial(token)
             return True
         else:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to submit OTP: {response.get('msg', response)}"
             )
 
@@ -79,6 +79,6 @@ class Signup(SonicBitBase):
         if response.get("success") == True:
             return True
         else:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to complete signup: {response.get('message', response.get('msg', response))}"
             )

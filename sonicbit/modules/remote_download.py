@@ -2,7 +2,7 @@ import logging
 
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import RemoteDownloadCommand
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.types import RemoteTaskList
 from sonicbit.types.path_info import PathInfo
 
@@ -23,7 +23,7 @@ class RemoteDownload(SonicBitBase):
 
         error_message = json_data.get("msg")
         if error_message:
-            raise SonicbitError(f"Failed to add remote download: {error_message}")
+            raise SonicBitError(f"Failed to add remote download: {error_message}")
 
     def list_remote_downloads(self) -> RemoteTaskList:
         logger.debug("Listing remote downloads")
@@ -51,6 +51,6 @@ class RemoteDownload(SonicBitBase):
 
         error_message = json_data.get("msg")
         if error_message:
-            raise SonicbitError(f"Failed to delete remote download: {error_message}")
+            raise SonicBitError(f"Failed to delete remote download: {error_message}")
 
         return False

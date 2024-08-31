@@ -1,4 +1,4 @@
 from .auth_error import AuthError
-from .error import SonicbitError
+from .error import SonicBitError
 
-__all__ = ["SonicbitError", "AuthError"]
+__all__ = ["SonicBitError", "AuthError"]

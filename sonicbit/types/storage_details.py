@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from requests import Response
 
-from sonicbit.error.error import SonicbitError
+from sonicbit.error.error import SonicBitError
 from sonicbit.utils import EnhancedJSONEncoder
 
 
@@ -23,13 +23,13 @@ class StorageDetails:
 
         # Check for error message
         if "message" in json_data:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"Failed to get storage details: {json_data['message']}"
             )
 
         data = json_data.get("data")
         if not data:
-            raise SonicbitError("Invalid response: 'data' key not found.")
+            raise SonicBitError("Invalid response: 'data' key not found.")
 
         return StorageDetails(
             size_byte_total=data["sizeByteTotal"],

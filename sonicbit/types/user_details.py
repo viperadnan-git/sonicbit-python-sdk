@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from requests import Response
 
-from sonicbit.error import SonicbitError
+from sonicbit.error import SonicBitError
 from sonicbit.types.app import App
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -42,7 +42,7 @@ class UserDetails:
 
         user_data = json_data.get("user_data")
         if json_data.get("message") or not user_data:
-            raise SonicbitError(
+            raise SonicBitError(
                 f"User details not found: {json_data.get('message', json_data)}"
             )
 
