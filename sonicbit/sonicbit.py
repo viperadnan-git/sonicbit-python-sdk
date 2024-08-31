@@ -5,9 +5,10 @@ from sonicbit.modules.file import File
 from sonicbit.modules.remote_download import RemoteDownload
 from sonicbit.modules.torrent import Torrent
 from sonicbit.modules.user import User
+from sonicbit.modules.signup import Signup
 
 
-class SonicBit(Auth, User, File, Torrent, RemoteDownload):
+class SonicBit(Auth, Signup, User, File, Torrent, RemoteDownload):
     def __init__(
         self,
         email: str,

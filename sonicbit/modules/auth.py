@@ -49,7 +49,3 @@ class Auth(SonicBitBase):
         )
 
         return AuthResponse.from_response(response)
-
-    @staticmethod
-    def url(path: str) -> str:
-        return f"{Constants.API_BASE_URL}{path}"
