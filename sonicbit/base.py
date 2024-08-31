@@ -8,7 +8,6 @@ class SonicBitBase:
 
     session = Session
 
-
     @staticmethod
     def url(path: str) -> str:
         return f"{Constants.API_BASE_URL}{path}"

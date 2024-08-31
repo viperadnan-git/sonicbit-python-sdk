@@ -15,7 +15,7 @@ class RemoteDownload(SonicBitBase):
 
         data = {"url": url, "path": path.path}
 
-        reponse = self.session.post(self.url("/remote_download/task/add"), data=data)
+        reponse = self.session.post(self.url("/remote_download/task/add"), json=data)
 
         json_data = reponse.json()
         if json_data.get("success", False):
@@ -42,7 +42,7 @@ class RemoteDownload(SonicBitBase):
             "task_id": id,
         }
         response = self.session.post(
-            self.url("/remote_download/task/delete"), data=data
+            self.url("/remote_download/task/delete"), json=data
         )
 
         json_data = response.json()

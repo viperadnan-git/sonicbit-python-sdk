@@ -44,7 +44,7 @@ class Auth(SonicBitBase):
         response = request(
             "POST",
             Auth.url("/web/login"),
-            data={"email": email, "password": password},
+            json={"email": email, "password": password},
             headers=Constants.API_HEADERS,
         )
 

@@ -2,7 +2,7 @@ import logging
 
 from sonicbit.sonicbit import SonicBit
 
-__version__ = "0.1.1"
+__version__ = "0.2.1"
 __all__ = ["SonicBit"]
 
 logging.basicConfig(

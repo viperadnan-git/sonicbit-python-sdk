@@ -42,7 +42,9 @@ class UserDetails:
 
         user_data = json_data.get("user_data")
         if json_data.get("message") or not user_data:
-            raise SonicbitError(f"User details not found: {json_data.get('message')}")
+            raise SonicbitError(
+                f"User details not found: {json_data.get('message', json_data)}"
+            )
 
         return UserDetails(
             id=user_data["id"],

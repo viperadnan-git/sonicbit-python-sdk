@@ -1,9 +1,10 @@
-from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicbitError
-import requests
-from sonicbit.constants import Constants
 import logging
 
+import requests
+
+from sonicbit.base import SonicBitBase
+from sonicbit.constants import Constants
+from sonicbit.error.error import SonicbitError
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,6 @@ class Signup(SonicBitBase):
             SonicBitBase.url("/user/register"), json=data, headers=Constants.API_HEADERS
         ).json()
 
-        
         if response["success"] == True:
             if otp_callback:
                 otp = otp_callback(email)
@@ -51,13 +51,14 @@ class Signup(SonicBitBase):
             headers=Constants.API_HEADERS,
         ).json()
 
-
         if response["success"] == True:
-            token = response['data']['token']
+            token = response["data"]["token"]
             Signup._complete_tutorial(token)
             return True
         else:
-            raise SonicbitError(f"Failed to submit OTP: {response.get('msg', response)}")
+            raise SonicbitError(
+                f"Failed to submit OTP: {response.get('msg', response)}"
+            )
 
     @staticmethod
     def _complete_tutorial(token: str):
@@ -66,17 +67,18 @@ class Signup(SonicBitBase):
         data = {"delete": True}
 
         headers = Constants.API_HEADERS
-        headers['Authorization'] = f"Bearer {token}"
+        headers["Authorization"] = f"Bearer {token}"
 
         logger.debug(f"Marking tutorial as completed")
         response = requests.post(
             SonicBitBase.url("/user/account/welcome_completed"),
             json=data,
-            headers=headers
+            headers=headers,
         ).json()
 
-
-        if response.get('success') == True:
+        if response.get("success") == True:
             return True
         else:
-            raise SonicbitError(f"Failed to complete signup: {response.get('message', response.get('msg', response))}")
+            raise SonicbitError(
+                f"Failed to complete signup: {response.get('message', response.get('msg', response))}"
+            )

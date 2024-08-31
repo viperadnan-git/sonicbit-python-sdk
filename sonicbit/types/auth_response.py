@@ -33,7 +33,7 @@ class AuthResponse:
             )
         else:
             raise AuthError(
-                f"Login failed: {json_data.get('error')} - {json_data.get('msg')}"
+                f"Login failed: {json_data.get('error')} - {json_data.get('msg', json_data)}"
             )
 
     def __str__(self):
