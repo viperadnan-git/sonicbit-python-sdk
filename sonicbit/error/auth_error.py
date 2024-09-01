@@ -1,4 +1,5 @@
-class AuthError(Exception):
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(self.message)
+from sonicbit.error.error import SonicBitError
+
+
+class AuthError(SonicBitError):
+    pass
