@@ -206,6 +206,49 @@ print(success)
 
 This will return `True` if the file was successfully deleted, or `False` if there was an error.
 
+### Sign Up
+
+The `Signup` module provides methods for signing up to SonicBit.
+
+#### Sign Up
+
+To sign up to SonicBit, you can use the `signup` method:
+
+```python
+def otp_callback(email):
+    return input(f"Enter OTP for {email}: ")
+
+success = SonicBit.signup("John Doe", "email@example.com", "password", otp_callback)
+print(success)
+```
+
+This will return `True` if the signup was successful, or `False` if there was an error.
+
+> [!NOTE]  
+> If `otp_callback` is provided the `signup` method will automatically complete the signup process by submitting the OTP code and skipping tutorial. If `otp_callback` is not provided, the user will need to manually complete the signup process by submitting the OTP code and skipping tutorial. Once signup is complete, the user can use the `submit_otp` method to submit the OTP code.
+
+#### Submit OTP
+
+To submit the OTP code, you can use the `submit_otp` method:
+
+```python
+success = SonicBit.submit_otp("123456")
+print(success)
+```
+
+This will return `True` if the OTP code was successfully submitted, or `False` if there was an error.
+
+#### Complete Signup Tutorial (Optional)
+
+To complete the signup tutorial, you can use the `_complete_tutorial` method:
+
+```python
+SonicBit._complete_tutorial("token")
+```
+
+This will mark the tutorial as completed and allow the user to access their account.
+
+
 ## Contributing
 
 Contributions are welcome! If you find a bug or have a suggestion for a new feature, please open an issue or submit a pull request on the GitHub repository.
