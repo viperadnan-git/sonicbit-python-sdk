@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Signup(SonicBitBase):
     @staticmethod
-    def signup(name: str, email: str, password: str, otp_callback: callable = None):
+    def signup(name: str, email: str, password: str, otp_callback: callable = None) -> bool | str:
         """Signup to SonicBit."""
 
         data = {
@@ -28,13 +28,13 @@ class Signup(SonicBitBase):
         if response["success"] == True:
             if otp_callback:
                 otp = otp_callback(email)
-                Signup.submit_otp(otp)
+                return Signup.submit_otp(otp)
             return True
         else:
             raise SonicBitError(f"Failed to signup: {response.get('msg', response)}")
 
     @staticmethod
-    def submit_otp(otp: str):
+    def submit_otp(otp: str) -> str:
         """Submit OTP to SonicBit."""
 
         otp = otp.strip()
@@ -54,14 +54,14 @@ class Signup(SonicBitBase):
         if response["success"] == True:
             token = response["data"]["token"]
             Signup._complete_tutorial(token)
-            return True
+            return token
         else:
             raise SonicBitError(
                 f"Failed to submit OTP: {response.get('msg', response)}"
             )
 
     @staticmethod
-    def _complete_tutorial(token: str):
+    def _complete_tutorial(token: str) -> bool:
         """Complete signup."""
 
         data = {"delete": True}
