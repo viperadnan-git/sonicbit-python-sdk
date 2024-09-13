@@ -70,6 +70,8 @@ class TorrentList:
             email=info_data["email"],
             ftp=info_data["userftp"],
             plan_name=info_data["package"],
+            seedbox_status_up=info_data["seedbox_status_up"],
+            hash_list=info_data["hash_list"],
             raw=info_data,
         )
 

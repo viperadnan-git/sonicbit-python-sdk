@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from typing import List
 
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -15,6 +16,8 @@ class TorrentInfo:
     email: str
     ftp: str
     plan_name: str
+    seedbox_status_up: bool
+    hash_list: List[str]
     raw: dict
 
     def __str__(self) -> str:
