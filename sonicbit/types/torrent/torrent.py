@@ -26,6 +26,8 @@ class Torrent:
     status: List[str]
     is_private: bool
     in_cache: bool
+    deleted: bool
+    deleted_reason: str | None
     raw: dict
 
     def __str__(self) -> str:

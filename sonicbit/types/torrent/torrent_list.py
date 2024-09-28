@@ -53,6 +53,8 @@ class TorrentList:
                     status=torrent_data["status"],
                     is_private=torrent_data["isPrivate"] != "Public",
                     in_cache=torrent_data["in_cache"],
+                    deleted=torrent_data.get("deleted", False),
+                    deleted_reason=torrent_data.get("deleted_reason"),
                     raw=torrent_data,
                 )
                 for key, torrent_data in torrents_data.items()
