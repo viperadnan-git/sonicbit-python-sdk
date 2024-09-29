@@ -24,7 +24,8 @@ class TorrentDetails:
                 f"Server returned invalid JSON data: {response.text}"
             ) from None
 
-        if error_message := json_data.get("message"):
+        if "message" in json_data:
+            error_message = json_data["message"]
             raise SonicBitError(f"Failed to get torrent details: {error_message}")
 
         return TorrentDetails(
