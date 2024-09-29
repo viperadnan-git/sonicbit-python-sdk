@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 class Signup(SonicBitBase):
     @staticmethod
-    def signup(name: str, email: str, password: str, otp_callback: callable = None) -> bool | str:
+    def signup(
+        name: str, email: str, password: str, otp_callback: callable = None
+    ) -> bool | str:
         """Signup to SonicBit."""
 
         data = {

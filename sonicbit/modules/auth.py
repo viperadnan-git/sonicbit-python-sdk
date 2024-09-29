@@ -1,6 +1,6 @@
 import logging
 
-from requests import Session, request
+from requests import request
 
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
@@ -18,8 +18,8 @@ class Auth(SonicBitBase):
         token: str | None,
         token_handler: TokenHandler,
     ):
+        super().__init__()
         logger.debug("Initializing Auth")
-        self.session = Session()
         self.session.headers.update(Constants.API_HEADERS)
 
         if not token:
