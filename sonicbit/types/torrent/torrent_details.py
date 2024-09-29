@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from typing import List
 
 from requests import Response
+from requests.exceptions import JSONDecodeError
 
-from sonicbit.error.error import SonicBitError
+from sonicbit.errors import InvalidResponseError, SonicBitError
 from sonicbit.types.torrent.torrent_file import TorrentFile
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -16,12 +17,15 @@ class TorrentDetails:
 
     @staticmethod
     def from_response(response: Response) -> "TorrentDetails":
-        json_data = response.json()
-
-        if "message" in json_data:
-            raise SonicBitError(
-                f"Failed to get torrent details: {json_data['message']}"
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
             )
+
+        if error_message := json_data.get("message"):
+            raise SonicBitError(f"Failed to get torrent details: {error_message}")
 
         return TorrentDetails(
             files=[

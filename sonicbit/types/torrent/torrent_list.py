@@ -4,9 +4,10 @@ from datetime import datetime
 from typing import Dict
 
 from requests import Response
+from requests.exceptions import JSONDecodeError
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicBitError
+from sonicbit.errors import InvalidResponseError, SonicBitError
 from sonicbit.types.torrent.torrent import Torrent
 from sonicbit.types.torrent.torrent_info import TorrentInfo
 from sonicbit.utils import EnhancedJSONEncoder
@@ -21,10 +22,14 @@ class TorrentList:
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "TorrentList":
-        json_data = response.json()
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            )
 
-        error_message = json_data.get("message")
-        if error_message:
+        if error_message := json_data.get("message"):
             raise SonicBitError(f"Failed to get torrent list: {error_message}")
 
         torrents_data = json_data["list"]

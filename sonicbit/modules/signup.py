@@ -4,7 +4,7 @@ import requests
 
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
-from sonicbit.error.error import SonicBitError
+from sonicbit.errors import SonicBitError
 
 logger = logging.getLogger(__name__)
 

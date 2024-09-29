@@ -2,8 +2,9 @@ import json
 from dataclasses import dataclass
 
 from requests import Response
+from requests.exceptions import JSONDecodeError
 
-from sonicbit.error import AuthError
+from sonicbit.errors import AuthError, InvalidResponseError
 from sonicbit.utils import EnhancedJSONEncoder
 
 
@@ -18,13 +19,12 @@ class AuthResponse:
     def from_response(response: Response) -> "AuthResponse":
         try:
             json_data = response.json()
-        except ValueError:
-            raise AuthError("Invalid response")
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            )
 
-        success = json_data.get("success", False)
-
-        if success:
-            success_data = json_data["success"]
+        if success_data := json_data.get("success", False):
             return AuthResponse(
                 token=success_data["token"],
                 session=success_data["session"],

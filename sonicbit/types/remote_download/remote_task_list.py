@@ -5,7 +5,7 @@ from datetime import datetime
 from requests import Response
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error.error import SonicBitError
+from sonicbit.errors import SonicBitError
 from sonicbit.types.path_info import PathInfo
 from sonicbit.utils import EnhancedJSONEncoder
 

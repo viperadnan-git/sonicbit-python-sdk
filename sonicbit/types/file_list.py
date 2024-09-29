@@ -6,7 +6,7 @@ from requests import Response
 from requests.exceptions import JSONDecodeError
 
 from sonicbit.base import SonicBitBase
-from sonicbit.error import SonicBitError
+from sonicbit.errors import InvalidResponseError
 from sonicbit.types.file import File
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -22,7 +22,7 @@ class FileList:
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise SonicBitError("Invalid response")
+            raise InvalidResponseError("Invalid response")
 
         result = json_data.get("result", [])
         items = [File.from_dict(client, item) for item in result]

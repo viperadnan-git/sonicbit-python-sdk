@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from requests import Response
+from requests.exceptions import JSONDecodeError
 
-from sonicbit.error import SonicBitError
+from sonicbit.errors import InvalidResponseError, SonicBitError
 from sonicbit.types.app import App
 from sonicbit.utils import EnhancedJSONEncoder
 
@@ -38,7 +39,12 @@ class UserDetails:
 
     @staticmethod
     def from_response(response: Response) -> "UserDetails":
-        json_data = response.json()
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            )
 
         user_data = json_data.get("user_data")
         if json_data.get("message") or not user_data:

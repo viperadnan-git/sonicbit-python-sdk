@@ -1,9 +1,11 @@
 import logging
 from typing import List
 
+from requests.exceptions import JSONDecodeError
+
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import TorrentCommand
-from sonicbit.error import SonicBitError
+from sonicbit.errors import InvalidResponseError, SonicBitError
 from sonicbit.types import PathInfo, TorrentDetails, TorrentList
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,12 @@ class Torrent(SonicBitBase):
         response = self.session.post(
             self.url("/app/seedbox/torrent/add"), params=params
         )
-        json_data = response.json()
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            )
 
         added_torrents = []
         if json_data["success"]:
