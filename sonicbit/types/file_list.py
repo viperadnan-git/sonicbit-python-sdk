@@ -22,7 +22,9 @@ class FileList:
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise InvalidResponseError("Invalid response")
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            ) from None
 
         result = json_data.get("result", [])
         items = [File.from_dict(client, item) for item in result]

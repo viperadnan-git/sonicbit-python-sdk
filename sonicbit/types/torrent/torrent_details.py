@@ -22,7 +22,7 @@ class TorrentDetails:
         except JSONDecodeError:
             raise InvalidResponseError(
                 f"Server returned invalid JSON data: {response.text}"
-            )
+            ) from None
 
         if error_message := json_data.get("message"):
             raise SonicBitError(f"Failed to get torrent details: {error_message}")

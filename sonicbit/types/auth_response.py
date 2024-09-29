@@ -22,7 +22,7 @@ class AuthResponse:
         except JSONDecodeError:
             raise InvalidResponseError(
                 f"Server returned invalid JSON data: {response.text}"
-            )
+            ) from None
 
         if success_data := json_data.get("success", False):
             return AuthResponse(

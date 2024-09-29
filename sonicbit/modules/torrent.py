@@ -38,7 +38,7 @@ class Torrent(SonicBitBase):
         except JSONDecodeError:
             raise InvalidResponseError(
                 f"Server returned invalid JSON data: {response.text}"
-            )
+            ) from None
 
         added_torrents = []
         if json_data["success"]:

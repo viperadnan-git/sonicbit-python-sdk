@@ -44,7 +44,7 @@ class UserDetails:
         except JSONDecodeError:
             raise InvalidResponseError(
                 f"Server returned invalid JSON data: {response.text}"
-            )
+            ) from None
 
         user_data = json_data.get("user_data")
         if json_data.get("message") or not user_data:
