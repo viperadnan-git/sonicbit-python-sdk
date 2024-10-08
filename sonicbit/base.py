@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
@@ -26,3 +28,10 @@ class SonicBitBase:
     @staticmethod
     def url(path: str) -> str:
         return f"{Constants.API_BASE_URL}{path}"
+
+    @staticmethod
+    def get_time_params() -> dict:
+        return {
+            "tzo": 0,
+            "_": int(datetime.now(timezone.utc).timestamp() * 1000),
+        }

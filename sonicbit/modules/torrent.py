@@ -29,6 +29,7 @@ class Torrent(SonicBitBase):
             "auto_start": 1 if auto_start else 0,
             "path": path.path,
         }
+        params.update(self.get_time_params())
 
         response = self.session.post(
             self.url("/app/seedbox/torrent/add"), params=params
@@ -79,6 +80,7 @@ class Torrent(SonicBitBase):
             "hash_list[]": hash,
             "with_file": 1 if with_file else 0,
         }
+        params.update(self.get_time_params())
 
         response = self.session.post(
             self.url("/app/seedbox/torrent/delete"), params=params
