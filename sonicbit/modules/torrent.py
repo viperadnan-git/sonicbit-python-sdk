@@ -52,7 +52,7 @@ class Torrent(SonicBitBase):
 
         return added_torrents
 
-    def upload_torrent_file(
+    def add_torrent_file(
         self,
         local_path: str,
         path: PathInfo = PathInfo.root(),
@@ -84,7 +84,6 @@ class Torrent(SonicBitBase):
 
         if not json_data["success"]:
             raise SonicBitError("Failed to add torrent: {}".format(json_data["msg"]))
-        logger.info("upload_torrent_file response: %s", json_data)
 
         return True
 
