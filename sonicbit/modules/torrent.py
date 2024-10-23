@@ -1,4 +1,5 @@
 import logging
+import os.path
 from typing import List
 
 from requests.exceptions import JSONDecodeError
@@ -50,6 +51,41 @@ class Torrent(SonicBitBase):
             raise SonicBitError("Failed to add torrent")
 
         return added_torrents
+
+    def add_torrent_file(
+        self,
+        local_path: str,
+        path: PathInfo = PathInfo.root(),
+        auto_start: bool = True,
+    ) -> bool:
+        logger.debug(f"Adding torrent {local_path} to {path.path}")
+
+        file_name = os.path.basename(local_path)
+        if not os.path.isfile(local_path):
+            raise SonicBitError(f"Failed to upload local torrent file: '{local_path}'. File does NOT exist")
+
+        post_data = {
+            'command': (None, TorrentCommand.UPLOAD_TORRENT_FILE.value),
+            'file': (file_name, open(local_path, 'rb'), 'application/octet-stream'),
+            'name': (None, file_name),
+            'size': (None, str(os.stat(local_path).st_size)),
+            'auto_start': (None, '1' if auto_start else '0'),
+            'path': path.path,
+        }
+        response = self.session.post(
+            self.url("/app/seedbox/torrent/upload"), files=post_data
+        )
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            ) from None
+
+        if not json_data["success"]:
+            raise SonicBitError("Failed to add torrent: {}".format(json_data["msg"]))
+
+        return True
 
     def list_torrents(self) -> TorrentList:
         logger.debug("Listing torrents")
