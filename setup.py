@@ -24,7 +24,7 @@ setup(
     license="GNU General Public License v3.0",
     keywords="sonicbit python sdk",
     packages=find_packages(),
-    install_requires=["requests"],
+    install_requires=["requests", "tenacity"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
