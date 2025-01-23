@@ -1,5 +1,5 @@
 class Constants:
-    API_DOMAIN = "v4.sonicbit.net"
+    API_DOMAIN = "v5.sonicbit.net"
     API_ORIGIN = "https://my.sonicbit.net"
     API_REFERER = "https://my.sonicbit.net/"
     API_BASE_URL = f"https://{API_DOMAIN}/api"

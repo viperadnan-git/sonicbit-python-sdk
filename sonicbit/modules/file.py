@@ -17,7 +17,7 @@ class File(SonicBitBase):
             "command": FileCommand.GET_DIR_CONTENTS.value,
         }
 
-        response = self.session.get(self.url("/file-manager"), params=params)
+        response = self.call(method="GET", url=self.url("/file-manager"), params=params)
         return FileList.from_response(self, response)
 
     def delete_file(
@@ -35,6 +35,6 @@ class File(SonicBitBase):
             "command": FileCommand.REMOVE.value,
         }
 
-        response = self.session.post(self.url("/file-manager"), data=data)
+        response = self.call(method="POST", url=self.url("/file-manager"), data=data)
         json_data = response.json()
         return json_data.get("success", False)

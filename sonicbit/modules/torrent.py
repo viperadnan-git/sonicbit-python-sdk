@@ -32,9 +32,7 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.session.post(
-            self.url("/app/seedbox/torrent/add"), params=params
-        )
+        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/add"), params=params)
         try:
             json_data = response.json()
         except JSONDecodeError:
@@ -72,9 +70,7 @@ class Torrent(SonicBitBase):
             'auto_start': (None, '1' if auto_start else '0'),
             'path': path.path,
         }
-        response = self.session.post(
-            self.url("/app/seedbox/torrent/upload"), files=post_data
-        )
+        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/upload"), files=post_data)
         try:
             json_data = response.json()
         except JSONDecodeError:
@@ -90,16 +86,14 @@ class Torrent(SonicBitBase):
     def list_torrents(self) -> TorrentList:
         logger.debug("Listing torrents")
 
-        response = self.session.post(self.url("/app/seedbox/torrent/list"))
+        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/list"))
 
         return TorrentList.from_response(self, response)
 
     def get_torrent_details(self, hash: str) -> TorrentDetails:
         logger.debug(f"Getting torrent details for {hash}")
 
-        response = self.session.post(
-            self.url(f"/app/seedbox/torrent/details"), params={"hash": hash}
-        )
+        response = self.call(method="POST", url=self.url(f"/app/seedbox/torrent/details"), params={"hash": hash})
 
         return TorrentDetails.from_response(response)
 
@@ -118,9 +112,7 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.session.post(
-            self.url("/app/seedbox/torrent/delete"), params=params
-        )
+        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/delete"), params=params)
         json_data = response.json()
 
         if "message" in json_data:
