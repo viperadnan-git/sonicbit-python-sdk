@@ -15,7 +15,9 @@ class RemoteDownload(SonicBitBase):
 
         data = {"url": url, "path": path.path}
 
-        reponse = self.call(method="POST", url=self.url("/remote_download/task/add"), json=data)
+        reponse = self.call(
+            method="POST", url=self.url("/remote_download/task/add"), json=data
+        )
 
         json_data = reponse.json()
         if json_data.get("success", False):
@@ -29,7 +31,9 @@ class RemoteDownload(SonicBitBase):
         logger.debug("Listing remote downloads")
 
         params = {"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS.value}
-        response = self.call(method="POST", url=self.url("/remote_download/task/list"), params=params)
+        response = self.call(
+            method="POST", url=self.url("/remote_download/task/list"), params=params
+        )
 
         return RemoteTaskList.from_response(self, response)
 
@@ -39,7 +43,9 @@ class RemoteDownload(SonicBitBase):
         data = {
             "task_id": id,
         }
-        response = self.call(method="POST", url=self.url("/remote_download/task/delete"), json=data)
+        response = self.call(
+            method="POST", url=self.url("/remote_download/task/delete"), json=data
+        )
 
         json_data = response.json()
         if json_data.get("success", False):

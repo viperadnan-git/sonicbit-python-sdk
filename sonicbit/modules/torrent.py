@@ -32,7 +32,9 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/add"), params=params)
+        response = self.call(
+            method="POST", url=self.url("/app/seedbox/torrent/add"), params=params
+        )
         try:
             json_data = response.json()
         except JSONDecodeError:
@@ -60,17 +62,21 @@ class Torrent(SonicBitBase):
 
         file_name = os.path.basename(local_path)
         if not os.path.isfile(local_path):
-            raise SonicBitError(f"Failed to upload local torrent file: '{local_path}'. File does NOT exist")
+            raise SonicBitError(
+                f"Failed to upload local torrent file: '{local_path}'. File does NOT exist"
+            )
 
         post_data = {
-            'command': (None, TorrentCommand.UPLOAD_TORRENT_FILE.value),
-            'file': (file_name, open(local_path, 'rb'), 'application/octet-stream'),
-            'name': (None, file_name),
-            'size': (None, str(os.stat(local_path).st_size)),
-            'auto_start': (None, '1' if auto_start else '0'),
-            'path': path.path,
+            "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE.value),
+            "file": (file_name, open(local_path, "rb"), "application/octet-stream"),
+            "name": (None, file_name),
+            "size": (None, str(os.stat(local_path).st_size)),
+            "auto_start": (None, "1" if auto_start else "0"),
+            "path": path.path,
         }
-        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/upload"), files=post_data)
+        response = self.call(
+            method="POST", url=self.url("/app/seedbox/torrent/upload"), files=post_data
+        )
         try:
             json_data = response.json()
         except JSONDecodeError:
@@ -93,7 +99,11 @@ class Torrent(SonicBitBase):
     def get_torrent_details(self, hash: str) -> TorrentDetails:
         logger.debug(f"Getting torrent details for {hash}")
 
-        response = self.call(method="POST", url=self.url(f"/app/seedbox/torrent/details"), params={"hash": hash})
+        response = self.call(
+            method="POST",
+            url=self.url(f"/app/seedbox/torrent/details"),
+            params={"hash": hash},
+        )
 
         return TorrentDetails.from_response(response)
 
@@ -112,7 +122,9 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/delete"), params=params)
+        response = self.call(
+            method="POST", url=self.url("/app/seedbox/torrent/delete"), params=params
+        )
         json_data = response.json()
 
         if "message" in json_data:

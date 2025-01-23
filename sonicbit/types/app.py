@@ -21,7 +21,7 @@ class App:
     def from_dict(app_data: dict) -> "App":
         return App(
             name=app_data["name"],
-            type=app_data["type"], 
+            type=app_data["type"],
             name_id=app_data["name_id"],
             user_id=app_data.get("user_id"),
             enable=app_data["enable"],

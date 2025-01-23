@@ -1,4 +1,3 @@
-pip install autoflake black isort -q
+autoflake --in-place  --remove-all-unused-imports --recursive .
 isort .
 black .
-autoflake --in-place  --remove-all-unused-imports --recursive .

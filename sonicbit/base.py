@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from requests import Session
+from requests import Session, request
 from requests.adapters import HTTPAdapter
 from tenacity import (
     retry,
@@ -38,6 +38,15 @@ class SonicBitBase:
     )
     def call(self, *args, **kwargs):
         return self.session.request(*args, **kwargs)
+
+    @retry(
+        stop=stop_after_attempt(MAX_API_RETRIES),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(ConnectionError),
+    )
+    @staticmethod
+    def request_call(*args, **kwargs):
+        return request(*args, **kwargs)
 
     @staticmethod
     def url(path: str) -> str:

@@ -1,7 +1,5 @@
 import logging
 
-from requests import request
-
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
 from sonicbit.handlers.token_handler import TokenHandler
@@ -41,9 +39,9 @@ class Auth(SonicBitBase):
     @staticmethod
     def login(email: str, password: str) -> AuthResponse:
         logger.info(f"Logging in as {email}")
-        response = request(
-            "POST",
-            Auth.url("/web/login"),
+        response = SonicBitBase.request_call(
+            method="POST",
+            url=SonicBitBase.url("/web/login"),
             json={"email": email, "password": password},
             headers=Constants.API_HEADERS,
         )
