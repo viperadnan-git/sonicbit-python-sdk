@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from requests import Session, request
 from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError
 from tenacity import (
     retry,
     retry_if_exception_type,
