@@ -1,24 +1,23 @@
-import json
-from dataclasses import dataclass
 from datetime import datetime
+from json import JSONDecodeError
 from typing import Dict
 
-from requests import Response
-from requests.exceptions import JSONDecodeError
+from httpx import Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from sonicbit.base import SonicBitBase
 from sonicbit.errors import InvalidResponseError, SonicBitError
-from sonicbit.types.torrent.torrent import Torrent
-from sonicbit.types.torrent.torrent_info import TorrentInfo
-from sonicbit.utils import EnhancedJSONEncoder
+from sonicbit.models.torrent.torrent import Torrent
+from sonicbit.models.torrent.torrent_info import TorrentInfo
 
 
-@dataclass
-class TorrentList:
-    client: SonicBitBase
+class TorrentList(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    client: SonicBitBase = Field(exclude=True)
     torrents: Dict[str, Torrent]
     info: TorrentInfo
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "TorrentList":
@@ -85,4 +84,4 @@ class TorrentList:
         return TorrentList(client=client, torrents=torrents, info=info, raw=json_data)
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

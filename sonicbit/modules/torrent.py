@@ -1,13 +1,12 @@
 import logging
 import os.path
+from json import JSONDecodeError
 from typing import List
-
-from requests.exceptions import JSONDecodeError
 
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import TorrentCommand
 from sonicbit.errors import InvalidResponseError, SonicBitError
-from sonicbit.types import PathInfo, TorrentDetails, TorrentList
+from sonicbit.models import PathInfo, TorrentDetails, TorrentList
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,9 @@ class Torrent(SonicBitBase):
         path: PathInfo = PathInfo.root(),
         auto_start: bool = True,
     ) -> List[str]:
-        logger.debug(f"Adding torrent {uri} to {path.path}")
+        logger.debug(
+            "Adding torrent uri=%s path=%s auto_start=%s", uri, path.path, auto_start
+        )
 
         if isinstance(uri, str):
             uri = [uri]
@@ -58,7 +59,12 @@ class Torrent(SonicBitBase):
         path: PathInfo = PathInfo.root(),
         auto_start: bool = True,
     ) -> bool:
-        logger.debug(f"Adding torrent {local_path} to {path.path}")
+        logger.debug(
+            "Uploading torrent file=%s path=%s auto_start=%s",
+            local_path,
+            path.path,
+            auto_start,
+        )
 
         file_name = os.path.basename(local_path)
         if not os.path.isfile(local_path):
@@ -90,14 +96,14 @@ class Torrent(SonicBitBase):
         return True
 
     def list_torrents(self) -> TorrentList:
-        logger.debug("Listing torrents")
+        logger.debug("Listing all torrents")
 
         response = self.call(method="POST", url=self.url("/app/seedbox/torrent/list"))
 
         return TorrentList.from_response(self, response)
 
     def get_torrent_details(self, hash: str) -> TorrentDetails:
-        logger.debug(f"Getting torrent details for {hash}")
+        logger.debug("Fetching torrent details hash=%s", hash)
 
         response = self.call(
             method="POST",
@@ -110,7 +116,7 @@ class Torrent(SonicBitBase):
     def delete_torrent(
         self, hash: str | List[str], with_file: bool = False
     ) -> List[str]:
-        logger.debug(f"Deleting torrent {hash}")
+        logger.debug("Deleting torrent hash=%s with_file=%s", hash, with_file)
 
         if isinstance(hash, str):
             hash = [hash]

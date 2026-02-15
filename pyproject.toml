@@ -12,7 +12,11 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
 ]
-dependencies = ["requests", "tenacity"]
+dependencies = [
+ "httpx>=0.28.1",
+ "pydantic>=2.12.5",
+ "tenacity>=9.1.4",
+]
 
 [project.urls]
 Homepage = "https://github.com/viperadnan-git/sonicbit-python-sdk"

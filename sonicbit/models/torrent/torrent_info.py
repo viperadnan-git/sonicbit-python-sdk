@@ -1,12 +1,9 @@
-import json
-from dataclasses import dataclass
 from typing import List
 
-from sonicbit.utils import EnhancedJSONEncoder
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class TorrentInfo:
+class TorrentInfo(BaseModel):
     download_rate: int
     upload_rate: str
     size_byte_total: int
@@ -18,7 +15,7 @@ class TorrentInfo:
     plan_name: str
     seedbox_status_up: bool
     hash_list: List[str]
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

@@ -1,17 +1,16 @@
-import json
-from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from sonicbit.base import SonicBitBase
-from sonicbit.types.path_info import PathInfo
-from sonicbit.utils import EnhancedJSONEncoder
+from sonicbit.models.path_info import PathInfo
 
 
-@dataclass
-class File:
-    client: SonicBitBase
+class File(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    client: SonicBitBase = Field(exclude=True)
     name: str
     size: int
     path: str
@@ -23,7 +22,7 @@ class File:
     date_modified: datetime
     is_directory: bool
     is_remote_drive_dir: bool
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_dict(client: SonicBitBase, data: dict) -> "File":
@@ -44,7 +43,7 @@ class File:
         )
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)
 
     def delete(self) -> bool:
         return self.client.delete_file(file=self, is_directory=self.is_directory)

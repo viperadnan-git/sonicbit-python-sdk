@@ -1,22 +1,19 @@
-import json
-from dataclasses import dataclass
+from json import JSONDecodeError
 
-from requests import Response
-from requests.exceptions import JSONDecodeError
+from httpx import Response
+from pydantic import BaseModel, Field
 
 from sonicbit.errors import InvalidResponseError, SonicBitError
-from sonicbit.utils import EnhancedJSONEncoder
 
 
-@dataclass
-class StorageDetails:
+class StorageDetails(BaseModel):
     size_byte_total: int
     size_byte_limit: int
     set_storage_left: int
     percent: float
     max_parallel: int
     show_notice: bool
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_response(response: Response) -> "StorageDetails":
@@ -45,4 +42,4 @@ class StorageDetails:
         )
 
     def __str__(self):
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

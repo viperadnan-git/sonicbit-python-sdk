@@ -1,18 +1,15 @@
-import json
-from dataclasses import dataclass
 from datetime import datetime
+from json import JSONDecodeError
 from typing import List, Optional
 
-from requests import Response
-from requests.exceptions import JSONDecodeError
+from httpx import Response
+from pydantic import BaseModel, Field
 
 from sonicbit.errors import InvalidResponseError, SonicBitError
-from sonicbit.types.app import App
-from sonicbit.utils import EnhancedJSONEncoder
+from sonicbit.models.app import App
 
 
-@dataclass
-class UserDetails:
+class UserDetails(BaseModel):
     id: int
     name: str
     email: str
@@ -35,7 +32,7 @@ class UserDetails:
     seedbox_restart_limit: int
     require_pass_change: bool
     apps: List[App]
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_response(response: Response) -> "UserDetails":
@@ -79,4 +76,4 @@ class UserDetails:
         )
 
     def __str__(self):
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

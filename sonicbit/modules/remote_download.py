@@ -3,15 +3,15 @@ import logging
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import RemoteDownloadCommand
 from sonicbit.errors import SonicBitError
-from sonicbit.types import RemoteTaskList
-from sonicbit.types.path_info import PathInfo
+from sonicbit.models import RemoteTaskList
+from sonicbit.models.path_info import PathInfo
 
 logger = logging.getLogger(__name__)
 
 
 class RemoteDownload(SonicBitBase):
     def add_remote_download(self, url: str, path: PathInfo) -> bool:
-        logger.debug(f"Adding remote download {url} to {path.path}")
+        logger.debug("Adding remote download url=%s path=%s", url, path.path)
 
         data = {"url": url, "path": path.path}
 
@@ -28,7 +28,7 @@ class RemoteDownload(SonicBitBase):
             raise SonicBitError(f"Failed to add remote download: {error_message}")
 
     def list_remote_downloads(self) -> RemoteTaskList:
-        logger.debug("Listing remote downloads")
+        logger.debug("Listing all remote downloads")
 
         params = {"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS.value}
         response = self.call(
@@ -38,7 +38,7 @@ class RemoteDownload(SonicBitBase):
         return RemoteTaskList.from_response(self, response)
 
     def delete_remote_download(self, id: int) -> bool:
-        logger.debug(f"Deleting remote download with id {id}")
+        logger.debug("Deleting remote download id=%s", id)
 
         data = {
             "task_id": id,

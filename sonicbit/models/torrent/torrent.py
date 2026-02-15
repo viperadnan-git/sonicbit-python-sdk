@@ -1,16 +1,16 @@
-import json
-from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from sonicbit.base import SonicBitBase
-from sonicbit.types.torrent.torrent_file import TorrentFile
-from sonicbit.utils import EnhancedJSONEncoder
+from sonicbit.models.torrent.torrent_file import TorrentFile
 
 
-@dataclass
-class Torrent:
-    client: SonicBitBase
+class Torrent(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    client: SonicBitBase = Field(exclude=True)
     name: str
     hash: str
     size: int
@@ -28,10 +28,10 @@ class Torrent:
     in_cache: bool
     deleted: bool
     deleted_reason: str | None
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)
 
     @property
     def files(self) -> List[TorrentFile]:

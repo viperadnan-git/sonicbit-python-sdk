@@ -1,19 +1,16 @@
-import json
-from dataclasses import dataclass
+from json import JSONDecodeError
 
-from requests import Response
-from requests.exceptions import JSONDecodeError
+from httpx import Response
+from pydantic import BaseModel, Field
 
 from sonicbit.errors import AuthError, InvalidResponseError
-from sonicbit.utils import EnhancedJSONEncoder
 
 
-@dataclass
-class AuthResponse:
+class AuthResponse(BaseModel):
     token: str
     session: str
     require_2fa_verification: bool
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_response(response: Response) -> "AuthResponse":
@@ -37,4 +34,4 @@ class AuthResponse:
             )
 
     def __str__(self):
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

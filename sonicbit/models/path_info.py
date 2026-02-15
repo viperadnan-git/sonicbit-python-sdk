@@ -1,23 +1,19 @@
-import json
-from dataclasses import dataclass
 from typing import List
 
-from sonicbit.utils import EnhancedJSONEncoder
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class PathInfoItem:
+class PathInfoItem(BaseModel):
     key: str
     name: str
 
     def __str__(self):
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)
 
 
-@dataclass
-class PathInfo:
+class PathInfo(BaseModel):
     paths: List[PathInfoItem]
-    raw: List[dict]
+    raw: List[dict] = Field(exclude=True)
 
     @staticmethod
     def from_list(data: List[dict]) -> "PathInfo":
@@ -33,7 +29,7 @@ class PathInfo:
         )
 
     def __str__(self):
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)
 
     @property
     def serialized(self):

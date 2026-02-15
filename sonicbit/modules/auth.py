@@ -3,7 +3,7 @@ import logging
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
 from sonicbit.handlers.token_handler import TokenHandler
-from sonicbit.types import AuthResponse
+from sonicbit.models import AuthResponse
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class Auth(SonicBitBase):
         token_handler: TokenHandler,
     ):
         super().__init__()
-        logger.debug("Initializing Auth")
+        logger.debug("Initializing auth for email=%s", email)
         self.session.headers.update(Constants.API_HEADERS)
 
         if not token:
@@ -26,11 +26,13 @@ class Auth(SonicBitBase):
         self.session.headers.update({"Authorization": f"Bearer {token}"})
 
     def get_token(self, email: str, password: str, token_handler: TokenHandler) -> str:
-        logger.debug("Getting token")
+        logger.debug("Retrieving token for email=%s", email)
         token = token_handler.read(email)
         if token:
+            logger.debug("Token found in cache for email=%s", email)
             return token
 
+        logger.debug("No cached token found for email=%s, logging in", email)
         auth = self.login(email, password)
         token_handler.write(email, auth)
 
@@ -38,7 +40,7 @@ class Auth(SonicBitBase):
 
     @staticmethod
     def login(email: str, password: str) -> AuthResponse:
-        logger.info(f"Logging in as {email}")
+        logger.info("Logging in as email=%s", email)
         response = SonicBitBase.request_call(
             method="POST",
             url=SonicBitBase.url("/web/login"),

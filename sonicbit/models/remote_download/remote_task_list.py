@@ -1,22 +1,21 @@
-import json
-from dataclasses import dataclass
 from datetime import datetime
 
-from requests import Response
+from httpx import Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from sonicbit.base import SonicBitBase
 from sonicbit.errors import SonicBitError
-from sonicbit.types.path_info import PathInfo
-from sonicbit.utils import EnhancedJSONEncoder
+from sonicbit.models.path_info import PathInfo
 
 from .remote_task import RemoteTask
 
 
-@dataclass
-class RemoteTaskList:
-    client: SonicBitBase
+class RemoteTaskList(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    client: SonicBitBase = Field(exclude=True)
     tasks: list[RemoteTask]
-    raw: dict
+    raw: dict = Field(exclude=True)
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "RemoteTaskList":
@@ -55,4 +54,4 @@ class RemoteTaskList:
         )
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

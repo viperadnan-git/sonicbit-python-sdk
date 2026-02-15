@@ -2,7 +2,7 @@ import json
 import os
 
 from sonicbit.handlers.token_handler import TokenHandler
-from sonicbit.types.auth_response import AuthResponse
+from sonicbit.models.auth_response import AuthResponse
 
 
 class TokenFileHandler(TokenHandler):

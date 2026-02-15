@@ -1,4 +1,4 @@
-from sonicbit.types.auth_response import AuthResponse
+from sonicbit.models.auth_response import AuthResponse
 
 
 class TokenHandler:

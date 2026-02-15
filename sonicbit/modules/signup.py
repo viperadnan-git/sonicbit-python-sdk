@@ -20,7 +20,7 @@ class Signup(SonicBitBase):
             "password": password,
         }
 
-        logger.debug(f"Signing up as {email}")
+        logger.debug("Signing up name=%s email=%s", name, email)
         response = SonicBitBase.request_call(
             method="POST",
             url=SonicBitBase.url("/user/register"),
@@ -47,7 +47,7 @@ class Signup(SonicBitBase):
 
         data = {"code": otp.strip(), "type": "registration", "platform": "Web_Dash_V4"}
 
-        logger.debug(f"Submitting OTP {otp}")
+        logger.debug("Submitting OTP code=%s", otp)
         response = SonicBitBase.request_call(
             method="POST",
             url=SonicBitBase.url("/verification/code"),
@@ -73,7 +73,7 @@ class Signup(SonicBitBase):
         headers = Constants.API_HEADERS
         headers["Authorization"] = f"Bearer {token}"
 
-        logger.debug(f"Marking tutorial as completed")
+        logger.debug("Completing tutorial for token=%s...", token[:8])
         response = SonicBitBase.request_call(
             method="POST",
             url=SonicBitBase.url("/user/account/welcome_completed"),

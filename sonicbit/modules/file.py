@@ -3,15 +3,15 @@ import logging
 
 from sonicbit.base import SonicBitBase
 from sonicbit.enums import FileCommand
-from sonicbit.types import File as FileType
-from sonicbit.types import FileList, PathInfo
+from sonicbit.models import File as FileType
+from sonicbit.models import FileList, PathInfo
 
 logger = logging.getLogger(__name__)
 
 
 class File(SonicBitBase):
     def list_files(self, path: PathInfo = PathInfo.root()) -> FileList:
-        logger.debug(f"Listing files in {path.path}")
+        logger.debug("Listing files path=%s", path.path)
         params = {
             "arguments": json.dumps({"pathInfo": path.serialized}),
             "command": FileCommand.GET_DIR_CONTENTS.value,
@@ -23,7 +23,9 @@ class File(SonicBitBase):
     def delete_file(
         self, file: FileType | PathInfo, is_directory: bool = False
     ) -> bool:
-        logger.debug(f"Deleting file {file.path_info.path}")
+        logger.debug(
+            "Deleting file path=%s is_directory=%s", file.path_info.path, is_directory
+        )
         if isinstance(file, FileType):
             is_directory = file.is_directory
             file = file.path_info

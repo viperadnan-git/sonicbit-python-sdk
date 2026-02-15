@@ -1,12 +1,9 @@
-import json
-from dataclasses import dataclass
 from typing import Optional
 
-from sonicbit.utils import EnhancedJSONEncoder
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class App:
+class App(BaseModel):
     name: str
     type: str
     name_id: str
@@ -14,7 +11,7 @@ class App:
     enable: bool
     require_app_server: bool
     user_is_eligible: bool
-    raw: dict
+    raw: dict = Field(exclude=True)
     restart_count: Optional[int] = None
 
     @staticmethod
@@ -32,4 +29,4 @@ class App:
         )
 
     def __str__(self) -> str:
-        return json.dumps(self, indent=4, cls=EnhancedJSONEncoder)
+        return self.model_dump_json(indent=4)

@@ -21,3 +21,6 @@ done
 
 # update staged files
 git update-index --again
+
+# Run build
+uv build
