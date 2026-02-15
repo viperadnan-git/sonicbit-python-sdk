@@ -9,8 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class Auth(SonicBitBase):
-    _refreshing = False
-
     def __init__(
         self,
         email: str,
@@ -19,6 +17,7 @@ class Auth(SonicBitBase):
         token_handler: TokenHandler,
     ):
         super().__init__()
+        self._refreshing = False
         logger.debug("Initializing auth for email=%s", email)
         self._email = email
         self._password = password

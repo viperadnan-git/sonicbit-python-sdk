@@ -109,7 +109,7 @@ class Torrent(SonicBitBase):
 
         response = self._request(
             method="POST",
-            url=self.url(f"/app/seedbox/torrent/details"),
+            url=self.url("/app/seedbox/torrent/details"),
             params={"hash": hash},
         )
 

@@ -25,13 +25,10 @@ class File(SonicBitBase):
     def delete_file(
         self, file: FileType | PathInfo, is_directory: bool = False
     ) -> bool:
-        logger.debug(
-            "Deleting file path=%s is_directory=%s", file.path_info.path, is_directory
-        )
         if isinstance(file, FileType):
             is_directory = file.is_directory
             file = file.path_info
-
+        logger.debug("Deleting file path=%s is_directory=%s", file.path, is_directory)
         data = {
             "arguments": json.dumps(
                 {"pathInfo": file.serialized, "isDirectory": is_directory}
