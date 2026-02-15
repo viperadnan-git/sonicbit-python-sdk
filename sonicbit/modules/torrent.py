@@ -26,7 +26,7 @@ class Torrent(SonicBitBase):
             uri = [uri]
 
         params = {
-            "command": TorrentCommand.ADD_TORRENT_URL.value,
+            "command": TorrentCommand.ADD_TORRENT_URL,
             "url_list[]": uri,
             "auto_start": 1 if auto_start else 0,
             "path": path.path,
@@ -73,7 +73,7 @@ class Torrent(SonicBitBase):
             )
 
         post_data = {
-            "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE.value),
+            "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE),
             "file": (file_name, open(local_path, "rb"), "application/octet-stream"),
             "name": (None, file_name),
             "size": (None, str(os.stat(local_path).st_size)),
@@ -124,7 +124,7 @@ class Torrent(SonicBitBase):
             hash = [hash]
 
         params = {
-            "command": TorrentCommand.DELETE_TORRENT.value,
+            "command": TorrentCommand.DELETE_TORRENT,
             "hash_list[]": hash,
             "with_file": 1 if with_file else 0,
         }

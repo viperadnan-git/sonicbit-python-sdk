@@ -30,7 +30,7 @@ class RemoteDownload(SonicBitBase):
     def list_remote_downloads(self) -> RemoteTaskList:
         logger.debug("Listing all remote downloads")
 
-        params = {"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS.value}
+        params = {"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS}
         response = self._request(
             method="POST", url=self.url("/remote_download/task/list"), params=params
         )

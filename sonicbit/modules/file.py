@@ -14,7 +14,7 @@ class File(SonicBitBase):
         logger.debug("Listing files path=%s", path.path)
         params = {
             "arguments": json.dumps({"pathInfo": path.serialized}),
-            "command": FileCommand.GET_DIR_CONTENTS.value,
+            "command": FileCommand.GET_DIR_CONTENTS,
         }
 
         response = self._request(
@@ -33,7 +33,7 @@ class File(SonicBitBase):
             "arguments": json.dumps(
                 {"pathInfo": file.serialized, "isDirectory": is_directory}
             ),
-            "command": FileCommand.REMOVE.value,
+            "command": FileCommand.REMOVE,
         }
 
         response = self._request(
