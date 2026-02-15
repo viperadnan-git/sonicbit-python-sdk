@@ -33,7 +33,7 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.call(
+        response = self._request(
             method="POST", url=self.url("/app/seedbox/torrent/add"), params=params
         )
         try:
@@ -80,7 +80,7 @@ class Torrent(SonicBitBase):
             "auto_start": (None, "1" if auto_start else "0"),
             "path": path.path,
         }
-        response = self.call(
+        response = self._request(
             method="POST", url=self.url("/app/seedbox/torrent/upload"), files=post_data
         )
         try:
@@ -98,14 +98,16 @@ class Torrent(SonicBitBase):
     def list_torrents(self) -> TorrentList:
         logger.debug("Listing all torrents")
 
-        response = self.call(method="POST", url=self.url("/app/seedbox/torrent/list"))
+        response = self._request(
+            method="POST", url=self.url("/app/seedbox/torrent/list")
+        )
 
         return TorrentList.from_response(self, response)
 
     def get_torrent_details(self, hash: str) -> TorrentDetails:
         logger.debug("Fetching torrent details hash=%s", hash)
 
-        response = self.call(
+        response = self._request(
             method="POST",
             url=self.url(f"/app/seedbox/torrent/details"),
             params={"hash": hash},
@@ -128,7 +130,7 @@ class Torrent(SonicBitBase):
         }
         params.update(self.get_time_params())
 
-        response = self.call(
+        response = self._request(
             method="POST", url=self.url("/app/seedbox/torrent/delete"), params=params
         )
         json_data = response.json()

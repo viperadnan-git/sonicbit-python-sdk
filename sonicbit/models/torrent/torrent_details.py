@@ -10,7 +10,7 @@ from sonicbit.models.torrent.torrent_file import TorrentFile
 
 class TorrentDetails(BaseModel):
     files: List[TorrentFile]
-    raw: dict = Field(exclude=True)
+    raw: list = Field(exclude=True)
 
     @staticmethod
     def from_response(response: Response) -> "TorrentDetails":

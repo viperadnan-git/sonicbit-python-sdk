@@ -11,23 +11,23 @@ class TokenFileHandler(TokenHandler):
         super().__init__()
 
     def write(self, email: str, auth: AuthResponse) -> None:
-        cache = self.read_cache()
+        cache = self._read_cache()
 
         cache[email] = auth.token
         with open(self.path, "w") as f:
             json.dump(cache, f)
 
     def read(self, email: str) -> str | None:
-        cache = self.read_cache()
+        cache = self._read_cache()
 
         return cache.get(email)
 
-    def read_cache(self) -> dict:
+    def _read_cache(self) -> dict:
         if os.path.exists(self.path):
             try:
                 with open(self.path, "r") as f:
                     cache = json.load(f)
-            except:
+            except Exception:
                 raise Exception(
                     f"Invalid cache file, please delete '{self.path}' and try again"
                 )

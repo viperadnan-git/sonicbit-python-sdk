@@ -25,16 +25,16 @@ class SonicBitBase:
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(httpx.ConnectError),
     )
-    def call(self, *args, **kwargs):
+    def _request(self, *args, **kwargs):
         return self.session.request(*args, **kwargs)
 
+    @staticmethod
     @retry(
         stop=stop_after_attempt(MAX_API_RETRIES),
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(httpx.ConnectError),
     )
-    @staticmethod
-    def request_call(*args, **kwargs):
+    def _static_request(*args, **kwargs):
         return httpx.request(*args, **kwargs)
 
     @staticmethod

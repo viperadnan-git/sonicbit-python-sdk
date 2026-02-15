@@ -14,7 +14,7 @@ class FileList(BaseModel):
 
     client: SonicBitBase = Field(exclude=True)
     items: List[File]
-    raw: dict = Field(exclude=True)
+    raw: list = Field(exclude=True)
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "FileList":

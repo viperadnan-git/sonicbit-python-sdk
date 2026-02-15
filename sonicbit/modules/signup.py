@@ -21,7 +21,7 @@ class Signup(SonicBitBase):
         }
 
         logger.debug("Signing up name=%s email=%s", name, email)
-        response = SonicBitBase.request_call(
+        response = SonicBitBase._static_request(
             method="POST",
             url=SonicBitBase.url("/user/register"),
             json=data,
@@ -48,7 +48,7 @@ class Signup(SonicBitBase):
         data = {"code": otp.strip(), "type": "registration", "platform": "Web_Dash_V4"}
 
         logger.debug("Submitting OTP code=%s", otp)
-        response = SonicBitBase.request_call(
+        response = SonicBitBase._static_request(
             method="POST",
             url=SonicBitBase.url("/verification/code"),
             json=data,
@@ -74,7 +74,7 @@ class Signup(SonicBitBase):
         headers["Authorization"] = f"Bearer {token}"
 
         logger.debug("Completing tutorial for token=%s...", token[:8])
-        response = SonicBitBase.request_call(
+        response = SonicBitBase._static_request(
             method="POST",
             url=SonicBitBase.url("/user/account/welcome_completed"),
             json=data,

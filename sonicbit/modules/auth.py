@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class Auth(SonicBitBase):
+    _refreshing = False
+
     def __init__(
         self,
         email: str,
@@ -18,30 +20,51 @@ class Auth(SonicBitBase):
     ):
         super().__init__()
         logger.debug("Initializing auth for email=%s", email)
+        self._email = email
+        self._password = password
+        self._token_handler = token_handler
         self.session.headers.update(Constants.API_HEADERS)
 
         if not token:
-            token = self.get_token(email, password, token_handler)
+            token = self._get_token()
 
         self.session.headers.update({"Authorization": f"Bearer {token}"})
 
-    def get_token(self, email: str, password: str, token_handler: TokenHandler) -> str:
-        logger.debug("Retrieving token for email=%s", email)
-        token = token_handler.read(email)
+    def _get_token(self) -> str:
+        logger.debug("Retrieving token for email=%s", self._email)
+        token = self._token_handler.read(self._email)
         if token:
-            logger.debug("Token found in cache for email=%s", email)
+            logger.debug("Token found in cache for email=%s", self._email)
             return token
 
-        logger.debug("No cached token found for email=%s, logging in", email)
-        auth = self.login(email, password)
-        token_handler.write(email, auth)
+        return self._refresh_token()
 
-        return auth.token
+    def _refresh_token(self) -> str:
+        logger.debug("Refreshing token for email=%s", self._email)
+        auth = self.login(self._email, self._password)
+        self._token_handler.write(self._email, auth)
+        token = auth.token
+        self.session.headers.update({"Authorization": f"Bearer {token}"})
+        return token
+
+    def _request(self, *args, **kwargs):
+        response = super()._request(*args, **kwargs)
+
+        if response.status_code == 401 and not self._refreshing:
+            logger.debug("Received 401, refreshing token for email=%s", self._email)
+            self._refreshing = True
+            try:
+                self._refresh_token()
+                response = super()._request(*args, **kwargs)
+            finally:
+                self._refreshing = False
+
+        return response
 
     @staticmethod
     def login(email: str, password: str) -> AuthResponse:
         logger.info("Logging in as email=%s", email)
-        response = SonicBitBase.request_call(
+        response = SonicBitBase._static_request(
             method="POST",
             url=SonicBitBase.url("/web/login"),
             json={"email": email, "password": password},
