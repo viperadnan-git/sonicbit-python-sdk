@@ -1,10 +1,4 @@
-import logging
-
+from sonicbit._version import __version__
 from sonicbit.client import SonicBit
 
-__version__ = "0.3.0"
-__all__ = ["SonicBit"]
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+__all__ = ["SonicBit", "__version__"]

@@ -1,3 +1,0 @@
-# also update in setup.py
-requests
-tenacity

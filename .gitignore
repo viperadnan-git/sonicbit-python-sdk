@@ -9,6 +9,7 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+sonicbit/_version.py
 
 # development test files
 test.py

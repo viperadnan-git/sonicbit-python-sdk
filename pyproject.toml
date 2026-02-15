@@ -1,0 +1,40 @@
+[project]
+name = "sonicbit"
+dynamic = ["version"]
+description = "An unofficial Python SDK for SonicBit which uses the internal API to interact with the application."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "GPL-3.0-only"
+authors = [{ name = "Adnan Ahmad", email = "viperadnan@gmail.com" }]
+keywords = ["sonicbit", "python", "sdk"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = ["requests", "tenacity"]
+
+[project.urls]
+Homepage = "https://github.com/viperadnan-git/sonicbit-python-sdk"
+Repository = "https://github.com/viperadnan-git/sonicbit-python-sdk"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0.dev0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "sonicbit/_version.py"
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+    "black>=26.1.0",
+    "isort>=7.0.0",
+]
+
+[tool.isort]
+multi_line_output = 3

@@ -13,7 +13,7 @@ class SonicBit(Auth, Signup, User, File, Torrent, RemoteDownload):
         self,
         email: str,
         password: str,
-        token: str = None,
+        token: str | None = None,
         token_handler: TokenHandler = TokenFileHandler(),
     ):
         super().__init__(email, password, token, token_handler)
