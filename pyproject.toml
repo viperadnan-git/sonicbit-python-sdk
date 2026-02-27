@@ -14,7 +14,7 @@ classifiers = [
 ]
 dependencies = [
  "httpx>=0.28.1",
- "pydantic>=2.12.5",
+ "pydantic>=2.0.0",
  "tenacity>=9.1.4",
 ]
 
