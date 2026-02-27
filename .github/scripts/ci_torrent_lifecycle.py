@@ -3,7 +3,7 @@
 Exercises the full round-trip against the live SonicBit API:
 
   1. Pre-clean  — remove the test torrent if a previous CI run left it behind.
-  2. Add        — add a small, well-seeded public-domain magnet link.
+  2. Add        — add the magnet link supplied via SONICBIT_TEST_MAGNET.
   3. Download   — poll list_torrents() until progress reaches 100 %.
   4. Sync       — poll until in_cache is True, which means the data has been
                   moved from the seedbox to permanent cloud storage.
@@ -11,9 +11,12 @@ Exercises the full round-trip against the live SonicBit API:
   6. Delete     — delete the torrent and its files unconditionally (finally block)
                   so the test account is always left clean.
 
-Environment variables (required):
-    SONICBIT_EMAIL     — e-mail address of the test account
-    SONICBIT_PASSWORD  — password of the test account
+Environment variables:
+    SONICBIT_EMAIL          (required) e-mail address of the test account
+    SONICBIT_PASSWORD       (required) password of the test account
+    SONICBIT_TEST_MAGNET    (required) magnet URI for the torrent to use as the
+                            test fixture — must contain a btih info-hash,
+                            e.g. magnet:?xt=urn:btih:<40-hex-chars>&dn=Name&...
 
 Exit codes:
     0   all steps passed
@@ -22,8 +25,10 @@ Exit codes:
 
 import logging
 import os
+import re
 import sys
 import time
+from urllib.parse import parse_qs, urlparse
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,21 +36,6 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Test fixture
-# ---------------------------------------------------------------------------
-
-# Big Buck Bunny (~276 MB) — permanently seeded public-domain torrent.
-# On a seedbox with a fast uplink this finishes in well under a minute.
-TEST_MAGNET = (
-    "magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
-    "&dn=Big+Buck+Bunny"
-    "&tr=udp://explodie.org:6969"
-    "&tr=udp://tracker.opentrackr.org:1337"
-    "&tr=udp://tracker.openbittorrent.com:6969"
-)
-TEST_HASH = "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
 
 # Polling configuration.
 POLL_INTERVAL = 10        # seconds between list_torrents() calls
@@ -57,8 +47,28 @@ SYNC_TIMEOUT = 300        # seconds to wait for in_cache to become True
 # Helpers
 # ---------------------------------------------------------------------------
 
+def parse_magnet(magnet: str) -> tuple[str, str]:
+    """Return (hash_lower, display_name) extracted from a magnet URI.
+
+    Raises ValueError if the URI does not contain a btih info-hash.
+    The display name falls back to the hash string when dn= is absent.
+    """
+    match = re.search(r"urn:btih:([a-fA-F0-9]{40})", magnet, re.IGNORECASE)
+    if not match:
+        raise ValueError(
+            f"SONICBIT_TEST_MAGNET does not contain a btih info-hash: {magnet!r}"
+        )
+    hash_lower = match.group(1).lower()
+
+    qs = parse_qs(urlparse(magnet).query)
+    dn_values = qs.get("dn", [])
+    display_name = dn_values[0].replace("+", " ") if dn_values else hash_lower
+
+    return hash_lower, display_name
+
+
 def find_torrent(sb, hash_lower: str):
-    """Return the Torrent object for hash_lower, or None if absent."""
+    """Return the Torrent object matching hash_lower, or None if absent."""
     torrent_list = sb.list_torrents()
     for t in torrent_list.torrents.values():
         if t.hash.lower() == hash_lower:
@@ -67,11 +77,10 @@ def find_torrent(sb, hash_lower: str):
 
 
 def poll_until(sb, hash_lower: str, condition, label: str, timeout: int):
-    """
-    Poll list_torrents() every POLL_INTERVAL seconds until condition(torrent)
-    is True or timeout is reached.
+    """Poll list_torrents() every POLL_INTERVAL seconds until condition(torrent)
+    is True or timeout expires.
 
-    Returns the last seen Torrent on success, raises SystemExit on timeout.
+    Returns the matching Torrent on success; calls sys.exit(1) on timeout.
     """
     deadline = time.monotonic() + timeout
     torrent = None
@@ -112,12 +121,24 @@ def poll_until(sb, hash_lower: str, condition, label: str, timeout: int):
 def main() -> int:
     email = os.environ.get("SONICBIT_EMAIL", "")
     password = os.environ.get("SONICBIT_PASSWORD", "")
+    raw_magnet = os.environ.get("SONICBIT_TEST_MAGNET", "")
 
-    if not email or not password:
-        log.error(
-            "SONICBIT_EMAIL and SONICBIT_PASSWORD environment variables must be set"
-        )
+    missing = [name for name, val in [
+        ("SONICBIT_EMAIL", email),
+        ("SONICBIT_PASSWORD", password),
+        ("SONICBIT_TEST_MAGNET", raw_magnet),
+    ] if not val]
+    if missing:
+        log.error("Required environment variable(s) not set: %s", ", ".join(missing))
         return 1
+
+    try:
+        test_hash, display_name = parse_magnet(raw_magnet)
+    except ValueError as exc:
+        log.error("%s", exc)
+        return 1
+
+    log.info("Test torrent: %r  hash=%s", display_name, test_hash)
 
     from sonicbit import SonicBit
 
@@ -135,7 +156,7 @@ def main() -> int:
     try:
         # ---- Pre-clean: remove stale test torrent if present -------------
         log.info("Pre-clean: checking for stale test torrent …")
-        stale = find_torrent(sb, TEST_HASH)
+        stale = find_torrent(sb, test_hash)
         if stale:
             log.info("  Found stale torrent from a previous run — deleting it.")
             try:
@@ -147,14 +168,14 @@ def main() -> int:
         # ---- 2. Add torrent ----------------------------------------------
         log.info("Adding test torrent …")
         try:
-            added = sb.add_torrent(TEST_MAGNET)
+            added = sb.add_torrent(raw_magnet)
             log.info("add_torrent() accepted: %s", added)
         except Exception as exc:
             log.error("add_torrent() failed: %s", exc)
             return 1
 
         # Record the hash so the finally block can always clean up.
-        torrent_hash = TEST_HASH
+        torrent_hash = test_hash
 
         # ---- 3. Wait for download to complete (progress == 100) ----------
         log.info(
@@ -162,7 +183,7 @@ def main() -> int:
         )
         poll_until(
             sb,
-            TEST_HASH,
+            test_hash,
             lambda t: t.progress >= 100,
             "download",
             DOWNLOAD_TIMEOUT,
@@ -175,7 +196,7 @@ def main() -> int:
         )
         poll_until(
             sb,
-            TEST_HASH,
+            test_hash,
             lambda t: bool(t.in_cache),
             "sync",
             SYNC_TIMEOUT,
@@ -188,19 +209,16 @@ def main() -> int:
             file_list = sb.list_files()
             names = [f.name for f in file_list.items]
             log.info("  Root-level entries: %s", names)
-            found = any(
-                "big.buck.bunny" in n.lower() or "big buck bunny" in n.lower()
-                for n in names
-            )
+            needle = display_name.lower()
+            found = any(needle in n.lower() for n in names)
             if found:
-                log.info("  Torrent folder found in file listing. PASS")
+                log.info("  Torrent folder %r found in file listing. PASS", display_name)
             else:
-                # Not a hard failure — the folder may be nested or named
-                # differently on some account plans.
                 log.warning(
-                    "  Torrent folder not found at root level "
+                    "  Torrent folder %r not found at root level "
                     "(may be nested or renamed by the service). "
-                    "Treating as a warning, not a failure."
+                    "Treating as a warning, not a failure.",
+                    display_name,
                 )
         except Exception as exc:
             log.warning("  list_files() check skipped: %s", exc)

@@ -42,4 +42,5 @@ jobs:
               env:
                   SONICBIT_EMAIL: ${{ secrets.SONICBIT_EMAIL }}
                   SONICBIT_PASSWORD: ${{ secrets.SONICBIT_PASSWORD }}
+                  SONICBIT_TEST_MAGNET: ${{ secrets.SONICBIT_TEST_MAGNET }}
               run: uv run python .github/scripts/ci_torrent_lifecycle.py
