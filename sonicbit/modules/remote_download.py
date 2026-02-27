@@ -15,17 +15,23 @@ class RemoteDownload(SonicBitBase):
 
         data = {"url": url, "path": path.path}
 
-        reponse = self._request(
+        # Typo fix: variable was misspelled as `reponse` → `response`.
+        response = self._request(
             method="POST", url=self.url("/remote_download/task/add"), json=data
         )
 
-        json_data = reponse.json()
+        json_data = response.json()
         if json_data.get("success", False):
             return True
 
         error_message = json_data.get("msg")
         if error_message:
             raise SonicBitError(f"Failed to add remote download: {error_message}")
+
+        # Bug fix: the function is declared `-> bool` but previously fell through
+        # here with an implicit `None` return when success=False and no msg was
+        # present.  Return False explicitly so callers always receive a bool.
+        return False
 
     def list_remote_downloads(self) -> RemoteTaskList:
         logger.debug("Listing all remote downloads")

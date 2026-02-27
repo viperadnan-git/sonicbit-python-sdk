@@ -1,0 +1,46 @@
+name: Integration Test
+
+on:
+    push:
+        branches:
+            - main
+            - master
+            - "claude/**"
+    pull_request:
+        branches:
+            - main
+            - master
+
+# Only one integration run at a time per ref — prevents two CI jobs from
+# fighting over the same test account simultaneously.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    torrent-lifecycle:
+        name: "Torrent lifecycle: add → download → sync → delete"
+        runs-on: ubuntu-latest
+
+        # Hard cap so a hung poll never blocks the runner indefinitely.
+        timeout-minutes: 25
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v5
+
+            # uv sync reads uv.lock and installs exact pinned versions into
+            # a managed venv.  --no-dev skips autoflake/black/isort which are
+            # not needed at test time.
+            - name: Install dependencies
+              run: uv sync --no-dev
+
+            - name: Run torrent lifecycle test
+              env:
+                  SONICBIT_EMAIL: ${{ secrets.SONICBIT_EMAIL }}
+                  SONICBIT_PASSWORD: ${{ secrets.SONICBIT_PASSWORD }}
+                  SONICBIT_TEST_MAGNET: ${{ secrets.SONICBIT_TEST_MAGNET }}
+              run: uv run python .github/scripts/ci_torrent_lifecycle.py

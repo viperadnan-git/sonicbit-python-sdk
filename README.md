@@ -249,6 +249,265 @@ SonicBit._complete_tutorial("token")
 This will mark the tutorial as completed and allow the user to access their account.
 
 
+## Local Testing
+
+There is no automated test suite because this SDK talks to an unofficial
+internal API that requires live credentials.  The script below is a
+**smoke test** — it exercises every module against your real account and
+prints a pass/fail result for each check.
+
+> [!CAUTION]
+> The torrent lifecycle test (add → list → delete) and the remote-download
+> lifecycle test **create and immediately delete real data** in your account.
+> The file-listing test is read-only.  The storage clear test is commented out
+> by default because it is destructive and irreversible.
+
+### 1. Install the SDK in development mode
+
+```bash
+# from the repo root
+pip install -e .
+# or, if you use uv:
+uv pip install -e .
+```
+
+### 2. Set credentials via environment variables
+
+```bash
+export SONICBIT_EMAIL="your_email@example.com"
+export SONICBIT_PASSWORD="your_password"
+```
+
+Never hard-code credentials in the script — environment variables keep them
+out of shell history and version control.
+
+### 3. Run the smoke-test script
+
+Save the following as `smoke_test.py` in the repo root, then run
+`python smoke_test.py`.
+
+```python
+"""
+SonicBit SDK smoke tests — run against the live API to verify all modules.
+
+Usage:
+    export SONICBIT_EMAIL=your@email.com
+    export SONICBIT_PASSWORD=yourpassword
+    python smoke_test.py
+
+Each test prints PASS or FAIL with a short explanation.  A non-zero exit
+code is returned if any test fails.
+"""
+
+import os
+import sys
+
+from sonicbit import SonicBit
+from sonicbit.models import PathInfo
+
+# ---------------------------------------------------------------------------
+# Credentials from the environment (never hard-code these)
+# ---------------------------------------------------------------------------
+EMAIL = os.environ.get("SONICBIT_EMAIL", "")
+PASSWORD = os.environ.get("SONICBIT_PASSWORD", "")
+
+if not EMAIL or not PASSWORD:
+    print("ERROR: set SONICBIT_EMAIL and SONICBIT_PASSWORD environment variables")
+    sys.exit(1)
+
+# A freely available, tiny public-domain torrent used for add/delete round-trip.
+# Replace with any valid magnet link or .torrent URL you have access to.
+TEST_MAGNET = (
+    "magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"
+    "&dn=Big+Buck+Bunny&tr=udp://explodie.org:6969"
+)
+
+failures = []
+
+
+def check(name: str, condition: bool, detail: str = "") -> None:
+    """Assert a condition and record the result."""
+    if condition:
+        print(f"  PASS  {name}")
+    else:
+        msg = f"  FAIL  {name}" + (f" — {detail}" if detail else "")
+        print(msg)
+        failures.append(name)
+
+
+# ---------------------------------------------------------------------------
+# Authenticate
+# ---------------------------------------------------------------------------
+print("\n[auth]")
+try:
+    sb = SonicBit(email=EMAIL, password=PASSWORD)
+    check("SonicBit() authenticates without exception", True)
+except Exception as exc:
+    check("SonicBit() authenticates without exception", False, str(exc))
+    # No point continuing if auth itself is broken
+    sys.exit(1)
+
+# ---------------------------------------------------------------------------
+# User module
+# ---------------------------------------------------------------------------
+print("\n[user]")
+try:
+    details = sb.get_user_details()
+    check("get_user_details() returns a result", details is not None)
+    check("get_user_details() email matches login", details.email == EMAIL)
+    check("get_user_details() has a plan name", bool(details.plan_name))
+except Exception as exc:
+    check("get_user_details()", False, str(exc))
+
+try:
+    storage = sb.get_storage_details()
+    check("get_storage_details() returns a result", storage is not None)
+    check("get_storage_details() size_byte_limit > 0", storage.size_byte_limit > 0)
+    check(
+        "get_storage_details() percent is 0–100",
+        0.0 <= storage.percent <= 100.0,
+    )
+except Exception as exc:
+    check("get_storage_details()", False, str(exc))
+
+# ---------------------------------------------------------------------------
+# File module (read-only)
+# ---------------------------------------------------------------------------
+print("\n[file]")
+try:
+    file_list = sb.list_files()
+    check("list_files() returns a FileList", file_list is not None)
+    check("list_files() items is a list", isinstance(file_list.items, list))
+except Exception as exc:
+    check("list_files()", False, str(exc))
+
+# ---------------------------------------------------------------------------
+# Torrent module — add → list → details → delete round-trip
+# ---------------------------------------------------------------------------
+print("\n[torrent]")
+added_hashes = []
+try:
+    added = sb.add_torrent(TEST_MAGNET)
+    check("add_torrent() returns a non-empty list", len(added) > 0)
+    added_hashes = added
+except Exception as exc:
+    check("add_torrent()", False, str(exc))
+
+try:
+    torrent_list = sb.list_torrents()
+    check("list_torrents() returns a TorrentList", torrent_list is not None)
+    check("list_torrents() torrents is a dict", isinstance(torrent_list.torrents, dict))
+except Exception as exc:
+    check("list_torrents()", False, str(exc))
+
+if added_hashes:
+    # add_torrent returns the URIs that were accepted (indexed from the API),
+    # so we look up by hash from the list we just fetched.
+    found_hash = next(iter(torrent_list.torrents), None)
+    if found_hash:
+        try:
+            td = sb.get_torrent_details(found_hash)
+            check("get_torrent_details() returns a result", td is not None)
+            check("get_torrent_details() files is a list", isinstance(td.files, list))
+        except Exception as exc:
+            check("get_torrent_details()", False, str(exc))
+
+        try:
+            deleted = sb.delete_torrent(found_hash, with_file=False)
+            check("delete_torrent() returns deleted hash list", len(deleted) > 0)
+        except Exception as exc:
+            check("delete_torrent()", False, str(exc))
+    else:
+        check("torrent round-trip (list then delete)", False, "no torrents found after add")
+
+# ---------------------------------------------------------------------------
+# Remote download module — add → list → delete round-trip
+# ---------------------------------------------------------------------------
+print("\n[remote_download]")
+# Use a small public file; replace with any direct HTTP(S) URL.
+TEST_REMOTE_URL = "https://proof.ovh.net/files/1Mb.dat"
+
+try:
+    ok = sb.add_remote_download(TEST_REMOTE_URL, PathInfo.root())
+    check("add_remote_download() returns True", ok is True)
+except Exception as exc:
+    check("add_remote_download()", False, str(exc))
+
+try:
+    dl_list = sb.list_remote_downloads()
+    check("list_remote_downloads() returns a RemoteTaskList", dl_list is not None)
+    check("list_remote_downloads() tasks is a list", isinstance(dl_list.tasks, list))
+
+    # Clean up: delete the task we just added (match by URL)
+    for task in dl_list.tasks:
+        if task.url == TEST_REMOTE_URL:
+            deleted = sb.delete_remote_download(task.id)
+            check("delete_remote_download() returns True", deleted is True)
+            break
+except Exception as exc:
+    check("list_remote_downloads()", False, str(exc))
+
+# ---------------------------------------------------------------------------
+# Summary
+# ---------------------------------------------------------------------------
+print()
+if failures:
+    print(f"FAILED — {len(failures)} check(s) did not pass:")
+    for f in failures:
+        print(f"  • {f}")
+    sys.exit(1)
+else:
+    print("All checks passed.")
+```
+
+### 4. Expected output (all passing)
+
+```
+[auth]
+  PASS  SonicBit() authenticates without exception
+
+[user]
+  PASS  get_user_details() returns a result
+  PASS  get_user_details() email matches login
+  PASS  get_user_details() has a plan name
+  PASS  get_storage_details() returns a result
+  PASS  get_storage_details() size_byte_limit > 0
+  PASS  get_storage_details() percent is 0–100
+
+[file]
+  PASS  list_files() returns a FileList
+  PASS  list_files() items is a list
+
+[torrent]
+  PASS  add_torrent() returns a non-empty list
+  PASS  list_torrents() returns a TorrentList
+  PASS  list_torrents() torrents is a dict
+  PASS  get_torrent_details() returns a result
+  PASS  get_torrent_details() files is a list
+  PASS  delete_torrent() returns deleted hash list
+
+[remote_download]
+  PASS  add_remote_download() returns True
+  PASS  list_remote_downloads() returns a RemoteTaskList
+  PASS  list_remote_downloads() tasks is a list
+  PASS  delete_remote_download() returns True
+
+All checks passed.
+```
+
+### Enabling debug logging
+
+To see the raw HTTP requests and SDK log lines while the script runs:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+Add these two lines at the top of `smoke_test.py` (before creating the
+`SonicBit` instance) to print every request URL, status code, and the
+key/value debug context added during the v6 refactor.
+
 ## Contributing
 
 Contributions are welcome! If you find a bug or have a suggestion for a new feature, please open an issue or submit a pull request on the GitHub repository.

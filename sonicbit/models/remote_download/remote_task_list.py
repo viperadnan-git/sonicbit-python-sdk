@@ -1,10 +1,11 @@
 from datetime import datetime
+from json import JSONDecodeError
 
 from httpx import Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from sonicbit.base import SonicBitBase
-from sonicbit.errors import SonicBitError
+from sonicbit.errors import InvalidResponseError, SonicBitError
 from sonicbit.models.path_info import PathInfo
 
 from .remote_task import RemoteTask
@@ -19,7 +20,15 @@ class RemoteTaskList(BaseModel):
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "RemoteTaskList":
-        json_data = response.json()
+        # Bug fix: response.json() was called without guarding against
+        # JSONDecodeError.  Every other from_response in the codebase wraps
+        # this call, so we align RemoteTaskList to the same pattern.
+        try:
+            json_data = response.json()
+        except JSONDecodeError:
+            raise InvalidResponseError(
+                f"Server returned invalid JSON data: {response.text}"
+            ) from None
 
         if "message" in json_data:
             raise SonicBitError(
