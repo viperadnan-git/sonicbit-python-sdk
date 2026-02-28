@@ -5,13 +5,7 @@ from .file_list import FileList
 from .path_info import PathInfo, PathInfoItem
 from .remote_download import RemoteTask, RemoteTaskList
 from .storage_details import StorageDetails
-from .torrent import (
-    Torrent,
-    TorrentDetails,
-    TorrentFile,
-    TorrentInfo,
-    TorrentList
-)
+from .torrent import Torrent, TorrentDetails, TorrentFile, TorrentInfo, TorrentList
 from .user_details import UserDetails
 
 __all__ = [
