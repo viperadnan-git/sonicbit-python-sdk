@@ -14,6 +14,8 @@ class SonicBit(Auth, Signup, User, File, Torrent, RemoteDownload):
         email: str,
         password: str,
         token: str | None = None,
-        token_handler: TokenHandler = TokenFileHandler(),
+        token_handler: TokenHandler | None = None,
     ):
+        if token_handler is None:
+            token_handler = TokenFileHandler()
         super().__init__(email, password, token, token_handler)

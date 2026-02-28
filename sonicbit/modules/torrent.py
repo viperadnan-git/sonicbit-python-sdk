@@ -72,17 +72,20 @@ class Torrent(SonicBitBase):
                 f"Failed to upload local torrent file: '{local_path}'. File does NOT exist"
             )
 
-        post_data = {
-            "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE),
-            "file": (file_name, open(local_path, "rb"), "application/octet-stream"),
-            "name": (None, file_name),
-            "size": (None, str(os.stat(local_path).st_size)),
-            "auto_start": (None, "1" if auto_start else "0"),
-            "path": path.path,
-        }
-        response = self._request(
-            method="POST", url=self.url("/app/seedbox/torrent/upload"), files=post_data
-        )
+        with open(local_path, "rb") as torrent_file:
+            post_data = {
+                "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE),
+                "file": (file_name, torrent_file, "application/octet-stream"),
+                "name": (None, file_name),
+                "size": (None, str(os.stat(local_path).st_size)),
+                "auto_start": (None, "1" if auto_start else "0"),
+                "path": (None, path.path),
+            }
+            response = self._request(
+                method="POST",
+                url=self.url("/app/seedbox/torrent/upload"),
+                files=post_data,
+            )
         try:
             json_data = response.json()
         except JSONDecodeError:

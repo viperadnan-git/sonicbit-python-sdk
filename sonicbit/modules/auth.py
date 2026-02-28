@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from sonicbit.base import SonicBitBase
 from sonicbit.constants import Constants
@@ -17,7 +18,7 @@ class Auth(SonicBitBase):
         token_handler: TokenHandler,
     ):
         super().__init__()
-        self._refreshing = False
+        self._refresh_lock = threading.Lock()  # prevents concurrent token refreshes
         logger.debug("Initializing auth for email=%s", email)
         self._email = email
         self._password = password
@@ -49,14 +50,11 @@ class Auth(SonicBitBase):
     def _request(self, *args, **kwargs):
         response = super()._request(*args, **kwargs)
 
-        if response.status_code == 401 and not self._refreshing:
-            logger.debug("Received 401, refreshing token for email=%s", self._email)
-            self._refreshing = True
-            try:
+        if response.status_code == 401:
+            with self._refresh_lock:
+                logger.debug("Received 401, refreshing token for email=%s", self._email)
                 self._refresh_token()
                 response = super()._request(*args, **kwargs)
-            finally:
-                self._refreshing = False
 
         return response
 

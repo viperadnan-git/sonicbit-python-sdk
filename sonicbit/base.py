@@ -14,16 +14,17 @@ from sonicbit.constants import Constants
 class SonicBitBase:
     """Base class for all SonicBit modules."""
 
-    MAX_API_RETRIES = 5
+    MAX_API_RETRIES = 3
+    REQUEST_TIMEOUT = 15  # seconds; override at class level if needed
 
     def __init__(self):
-        transport = httpx.HTTPTransport(retries=3)
-        self.session = httpx.Client(transport=transport)
+        transport = httpx.HTTPTransport(retries=2)
+        self.session = httpx.Client(transport=transport, timeout=self.REQUEST_TIMEOUT)
 
     @retry(
         stop=stop_after_attempt(MAX_API_RETRIES),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        retry=retry_if_exception_type(httpx.ConnectError),
+        wait=wait_exponential(multiplier=1, min=1, max=5),
+        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException)),
     )
     def _request(self, *args, **kwargs):
         return self.session.request(*args, **kwargs)
@@ -31,10 +32,11 @@ class SonicBitBase:
     @staticmethod
     @retry(
         stop=stop_after_attempt(MAX_API_RETRIES),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        retry=retry_if_exception_type(httpx.ConnectError),
+        wait=wait_exponential(multiplier=1, min=1, max=5),
+        retry=retry_if_exception_type((httpx.ConnectError, httpx.TimeoutException)),
     )
     def _static_request(*args, **kwargs):
+        kwargs.setdefault("timeout", SonicBitBase.REQUEST_TIMEOUT)
         return httpx.request(*args, **kwargs)
 
     @staticmethod

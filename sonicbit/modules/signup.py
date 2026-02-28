@@ -42,7 +42,7 @@ class Signup(SonicBitBase):
 
         otp = otp.strip()
 
-        if not otp.isdigit() and len(otp) == 6:
+        if not otp.isdigit() or len(otp) != 6:
             raise SonicBitError("OTP must be a 6 digit number")
 
         data = {"code": otp.strip(), "type": "registration", "platform": "Web_Dash_V4"}
@@ -70,8 +70,7 @@ class Signup(SonicBitBase):
 
         data = {"delete": True}
 
-        headers = Constants.API_HEADERS
-        headers["Authorization"] = f"Bearer {token}"
+        headers = {**Constants.API_HEADERS, "Authorization": f"Bearer {token}"}
 
         logger.debug("Completing tutorial for token=%s...", token[:8])
         response = SonicBitBase._static_request(

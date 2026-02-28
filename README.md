@@ -248,7 +248,6 @@ SonicBit._complete_tutorial("token")
 
 This will mark the tutorial as completed and allow the user to access their account.
 
-
 ## Contributing
 
 Contributions are welcome! If you find a bug or have a suggestion for a new feature, please open an issue or submit a pull request on the GitHub repository.
