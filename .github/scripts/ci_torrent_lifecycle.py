@@ -2,16 +2,16 @@
 
 Exercises the full round-trip against the live SonicBit API:
 
-  1. Pre-clean  — remove the test torrent if a previous CI run left it behind.
-  2. Add        — add the magnet link supplied via SONICBIT_TEST_MAGNET.
-  3. Download   — poll list_torrents() until progress reaches 100 %.
-  4. Sync       — poll until the torrent is synced to cloud storage, detected
-                  by in_cache=True OR 'c' appearing in the status list.
-                  Either signal means the data has been moved from the seedbox
-                  to permanent cloud storage.
-  5. Verify     — confirm the torrent folder appears in list_files().
-  6. Delete     — delete the torrent and its files unconditionally (finally block)
-                  so the test account is always left clean.
+  1. Authenticate     — create a SonicBit session.
+  2. User details     — verify get_user_details() and get_storage_details().
+  3. Remote download  — full add → list → delete lifecycle for a small remote URL.
+  4. Pre-clean        — remove the test torrent if a previous CI run left it behind.
+  5. Add              — add the magnet link supplied via SONICBIT_TEST_MAGNET.
+  6. Download         — poll list_torrents() until progress reaches 100 %.
+  7. Sync             — poll until in_cache=True OR 'c' in status (data in cloud storage).
+  8. Torrent details  — verify get_torrent_details() returns a non-empty file list.
+  9. File delete      — verify delete_file() removes the torrent folder from cloud storage.
+ 10. Delete           — delete the torrent (finally block) so the account is always clean.
 
 Environment variables:
     SONICBIT_EMAIL          (required) e-mail address of the test account
@@ -43,6 +43,9 @@ log = logging.getLogger(__name__)
 POLL_INTERVAL = 10        # seconds between list_torrents() calls
 DOWNLOAD_TIMEOUT = 600    # seconds to wait for progress to reach 100 %
 SYNC_TIMEOUT = 300        # seconds to wait for cloud-storage sync signal
+
+# Small public file used for the remote-download lifecycle test.
+REMOTE_DOWNLOAD_URL = "https://proof.ovh.net/files/1Mb.dat"
 
 
 # ---------------------------------------------------------------------------
@@ -143,6 +146,7 @@ def main() -> int:
     log.info("Test torrent: %r  hash=%s", display_name, test_hash)
 
     from sonicbit import SonicBit
+    from sonicbit.models import PathInfo
 
     # ---- 1. Authenticate -------------------------------------------------
     log.info("Authenticating as %s …", email)
@@ -153,7 +157,109 @@ def main() -> int:
         return 1
     log.info("Authenticated OK")
 
+    # ---- 2. User details -------------------------------------------------
+    log.info("Fetching user details …")
+    try:
+        user = sb.get_user_details()
+        if user.email.lower() != email.lower():
+            log.error(
+                "get_user_details() email mismatch: got %r, expected %r",
+                user.email, email,
+            )
+            return 1
+        if user.is_suspended:
+            log.error("Account is suspended — cannot continue.")
+            return 1
+        log.info(
+            "  User: %r  plan=%r  premium=%s  suspended=%s",
+            user.name, user.plan_name, user.is_premium, user.is_suspended,
+        )
+    except Exception as exc:
+        log.error("get_user_details() failed: %s", exc)
+        return 1
+
+    log.info("Fetching storage details …")
+    try:
+        storage = sb.get_storage_details()
+        if storage.size_byte_limit <= 0:
+            log.error(
+                "get_storage_details() returned invalid size_byte_limit=%d",
+                storage.size_byte_limit,
+            )
+            return 1
+        if not (0.0 <= storage.percent <= 100.0):
+            log.error(
+                "get_storage_details() returned out-of-range percent=%.1f",
+                storage.percent,
+            )
+            return 1
+        log.info(
+            "  Storage: %.1f%% used  limit=%d bytes",
+            storage.percent, storage.size_byte_limit,
+        )
+    except Exception as exc:
+        log.error("get_storage_details() failed: %s", exc)
+        return 1
+
+    # ---- 3. Remote download lifecycle ------------------------------------
+    log.info("Remote download: pre-clean (removing any stale task) …")
+    try:
+        existing = sb.list_remote_downloads()
+        for task in existing.tasks:
+            if task.url == REMOTE_DOWNLOAD_URL:
+                log.info("  Removing stale remote-download task id=%d …", task.id)
+                sb.delete_remote_download(task.id)
+    except Exception as exc:
+        log.warning("  Remote-download pre-clean skipped: %s", exc)
+
+    log.info("Adding remote download: %s …", REMOTE_DOWNLOAD_URL)
+    try:
+        ok = sb.add_remote_download(REMOTE_DOWNLOAD_URL, PathInfo.root())
+        if not ok:
+            log.error("add_remote_download() returned False")
+            return 1
+        log.info("  add_remote_download() accepted.")
+    except Exception as exc:
+        log.error("add_remote_download() failed: %s", exc)
+        return 1
+
+    log.info("Listing remote downloads to verify task was created …")
+    rd_task_id = None
+    try:
+        rd_list = sb.list_remote_downloads()
+        for task in rd_list.tasks:
+            if task.url == REMOTE_DOWNLOAD_URL:
+                rd_task_id = task.id
+                log.info(
+                    "  Found task id=%d  progress=%d%%  in_queue=%s",
+                    task.id, task.progress, task.in_queue,
+                )
+                break
+        if rd_task_id is None:
+            log.error(
+                "list_remote_downloads() did not return the newly added task (url=%s)",
+                REMOTE_DOWNLOAD_URL,
+            )
+            return 1
+    except Exception as exc:
+        log.error("list_remote_downloads() failed: %s", exc)
+        return 1
+
+    log.info("Deleting remote download task id=%d …", rd_task_id)
+    try:
+        deleted = sb.delete_remote_download(rd_task_id)
+        if not deleted:
+            log.error(
+                "delete_remote_download() returned False for id=%d", rd_task_id
+            )
+            return 1
+        log.info("  Remote download task deleted.")
+    except Exception as exc:
+        log.error("delete_remote_download() failed: %s", exc)
+        return 1
+
     torrent_hash = None
+    cloud_files_deleted = False
 
     try:
         # ---- Pre-clean: remove stale test torrent if present -------------
@@ -167,7 +273,7 @@ def main() -> int:
             except Exception as exc:
                 log.warning("  Could not delete stale torrent (continuing): %s", exc)
 
-        # ---- 2. Add torrent ----------------------------------------------
+        # ---- 5. Add torrent ----------------------------------------------
         log.info("Adding test torrent …")
         try:
             added = sb.add_torrent(raw_magnet)
@@ -179,7 +285,7 @@ def main() -> int:
         # Record the hash so the finally block can always clean up.
         torrent_hash = test_hash
 
-        # ---- 3. Wait for download to complete (progress == 100) ----------
+        # ---- 6. Wait for download to complete (progress == 100) ----------
         log.info(
             "Waiting for download to complete (timeout %d s) …", DOWNLOAD_TIMEOUT
         )
@@ -192,7 +298,7 @@ def main() -> int:
         )
         log.info("Download complete (progress = 100 %%).")
 
-        # ---- 4. Wait for sync to cloud storage ---------------------------
+        # ---- 7. Wait for sync to cloud storage ---------------------------
         # The API signals a completed sync via EITHER of two mechanisms:
         #   • in_cache=True  — explicit boolean flag set by some plan types
         #   • 'c' in status  — status code that appears once the seedbox has
@@ -211,37 +317,73 @@ def main() -> int:
         )
         log.info("Data synchronized to cloud storage.")
 
-        # ---- 5. Verify files appear in cloud file listing ----------------
+        # ---- 8. Torrent details ------------------------------------------
+        log.info("Fetching torrent details …")
+        try:
+            details = sb.get_torrent_details(test_hash)
+            if not details.files:
+                log.error("get_torrent_details() returned an empty file list")
+                return 1
+            log.info(
+                "  get_torrent_details() OK — %d file(s) found:",
+                len(details.files),
+            )
+            for f in details.files:
+                log.info(
+                    "    %s  (%d bytes  progress=%d%%)", f.name, f.size, f.progress
+                )
+        except Exception as exc:
+            log.error("get_torrent_details() failed: %s", exc)
+            return 1
+
+        # ---- 9. File listing and deletion --------------------------------
         log.info("Verifying torrent folder appears in cloud file listing …")
         try:
             file_list = sb.list_files()
             names = [f.name for f in file_list.items]
             log.info("  Root-level entries: %s", names)
             needle = display_name.lower()
-            found = any(needle in n.lower() for n in names)
-            if found:
-                log.info("  Torrent folder %r found in file listing. PASS", display_name)
+            target_file = next(
+                (f for f in file_list.items if needle in f.name.lower()), None
+            )
+            if target_file:
+                log.info(
+                    "  Torrent folder %r found in file listing. PASS", target_file.name
+                )
+                log.info("  Deleting torrent folder from cloud storage …")
+                deleted = sb.delete_file(target_file)
+                if deleted:
+                    cloud_files_deleted = True
+                    log.info("  delete_file() succeeded. PASS")
+                else:
+                    log.warning(
+                        "  delete_file() returned False — folder may not have been removed."
+                    )
             else:
                 log.warning(
                     "  Torrent folder %r not found at root level "
                     "(may be nested or renamed by the service). "
-                    "Treating as a warning, not a failure.",
+                    "Skipping delete_file() test.",
                     display_name,
                 )
         except Exception as exc:
-            log.warning("  list_files() check skipped: %s", exc)
+            log.warning("  File listing/deletion check skipped: %s", exc)
 
         log.info("All lifecycle checks passed.")
         return 0
 
     finally:
-        # ---- 6. Always delete the torrent and its files ------------------
+        # ---- 10. Always delete the torrent --------------------------------
         if torrent_hash:
+            # If cloud files were already removed by delete_file() above,
+            # use with_file=False to avoid a spurious server-side error.
+            with_file = not cloud_files_deleted
             log.info(
-                "Cleanup: deleting torrent %s (with_file=True) …", torrent_hash
+                "Cleanup: deleting torrent %s (with_file=%s) …",
+                torrent_hash, with_file,
             )
             try:
-                sb.delete_torrent(torrent_hash, with_file=True)
+                sb.delete_torrent(torrent_hash, with_file=with_file)
                 log.info("Cleanup complete.")
             except Exception as exc:
                 log.error("delete_torrent() failed during cleanup: %s", exc)
