@@ -42,11 +42,6 @@ class Signup(SonicBitBase):
 
         otp = otp.strip()
 
-        # Validate that the OTP is exactly 6 digits.
-        # Bug fix: the original condition used `and` which only raised when the
-        # length was already 6 but non-digit, silently accepting non-6-char inputs.
-        # The corrected condition uses `or` so that any input that is either
-        # non-numeric OR not exactly 6 characters is rejected.
         if not otp.isdigit() or len(otp) != 6:
             raise SonicBitError("OTP must be a 6 digit number")
 
@@ -75,11 +70,6 @@ class Signup(SonicBitBase):
 
         data = {"delete": True}
 
-        # Bug fix: the original code did `headers = Constants.API_HEADERS` which
-        # is a reference to the shared class-level dict, not a copy.  Adding
-        # "Authorization" to `headers` then permanently mutated Constants.API_HEADERS,
-        # causing every subsequent _static_request (e.g. login) to also carry the
-        # now-stale signup token.  Use a shallow copy so the shared dict is untouched.
         headers = {**Constants.API_HEADERS, "Authorization": f"Bearer {token}"}
 
         logger.debug("Completing tutorial for token=%s...", token[:8])

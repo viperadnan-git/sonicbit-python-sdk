@@ -13,32 +13,26 @@ class RemoteDownload(SonicBitBase):
     def add_remote_download(self, url: str, path: PathInfo) -> bool:
         logger.debug("Adding remote download url=%s path=%s", url, path.path)
 
-        data = {"url": url, "path": path.path}
+        json_data = self._request(
+            method="POST",
+            url=self.url("/remote_download/task/add"),
+            json={"url": url, "path": path.path},
+        ).json()
 
-        # Typo fix: variable was misspelled as `reponse` → `response`.
-        response = self._request(
-            method="POST", url=self.url("/remote_download/task/add"), json=data
-        )
+        if not json_data.get("success", False):
+            raise SonicBitError(
+                f"Failed to add remote download: {json_data.get('msg')}"
+            )
 
-        json_data = response.json()
-        if json_data.get("success", False):
-            return True
-
-        error_message = json_data.get("msg")
-        if error_message:
-            raise SonicBitError(f"Failed to add remote download: {error_message}")
-
-        # Bug fix: the function is declared `-> bool` but previously fell through
-        # here with an implicit `None` return when success=False and no msg was
-        # present.  Return False explicitly so callers always receive a bool.
-        return False
+        return True
 
     def list_remote_downloads(self) -> RemoteTaskList:
         logger.debug("Listing all remote downloads")
 
-        params = {"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS}
         response = self._request(
-            method="POST", url=self.url("/remote_download/task/list"), params=params
+            method="POST",
+            url=self.url("/remote_download/task/list"),
+            params={"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS},
         )
 
         return RemoteTaskList.from_response(self, response)
@@ -46,19 +40,15 @@ class RemoteDownload(SonicBitBase):
     def delete_remote_download(self, id: int) -> bool:
         logger.debug("Deleting remote download id=%s", id)
 
-        data = {
-            "task_id": id,
-        }
-        response = self._request(
-            method="POST", url=self.url("/remote_download/task/delete"), json=data
-        )
+        json_data = self._request(
+            method="POST",
+            url=self.url("/remote_download/task/delete"),
+            json={"task_id": id},
+        ).json()
 
-        json_data = response.json()
-        if json_data.get("success", False):
-            return True
+        if not json_data.get("success", False):
+            raise SonicBitError(
+                f"Failed to delete remote download: {json_data.get('msg')}"
+            )
 
-        error_message = json_data.get("msg")
-        if error_message:
-            raise SonicBitError(f"Failed to delete remote download: {error_message}")
-
-        return False
+        return True

@@ -72,12 +72,6 @@ class Torrent(SonicBitBase):
                 f"Failed to upload local torrent file: '{local_path}'. File does NOT exist"
             )
 
-        # Bug fix: open the torrent file in a context manager so the file handle
-        # is guaranteed to be closed once the request completes (or raises).
-        # Bug fix: "path" was missing the httpx multipart tuple form (None, value);
-        # every other non-file field uses (filename, data[, content_type]) where
-        # filename=None signals a plain form field — "path" must follow the same
-        # convention or httpx will attempt to encode the raw string as a filename.
         with open(local_path, "rb") as torrent_file:
             post_data = {
                 "command": (None, TorrentCommand.UPLOAD_TORRENT_FILE),

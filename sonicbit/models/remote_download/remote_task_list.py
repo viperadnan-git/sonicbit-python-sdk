@@ -20,9 +20,6 @@ class RemoteTaskList(BaseModel):
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "RemoteTaskList":
-        # Bug fix: response.json() was called without guarding against
-        # JSONDecodeError.  Every other from_response in the codebase wraps
-        # this call, so we align RemoteTaskList to the same pattern.
         try:
             json_data = response.json()
         except JSONDecodeError:
