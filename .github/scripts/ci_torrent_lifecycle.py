@@ -5,8 +5,10 @@ Exercises the full round-trip against the live SonicBit API:
   1. Pre-clean  — remove the test torrent if a previous CI run left it behind.
   2. Add        — add the magnet link supplied via SONICBIT_TEST_MAGNET.
   3. Download   — poll list_torrents() until progress reaches 100 %.
-  4. Sync       — poll until in_cache is True, which means the data has been
-                  moved from the seedbox to permanent cloud storage.
+  4. Sync       — poll until the torrent is synced to cloud storage, detected
+                  by in_cache=True OR 'c' appearing in the status list.
+                  Either signal means the data has been moved from the seedbox
+                  to permanent cloud storage.
   5. Verify     — confirm the torrent folder appears in list_files().
   6. Delete     — delete the torrent and its files unconditionally (finally block)
                   so the test account is always left clean.
@@ -40,7 +42,7 @@ log = logging.getLogger(__name__)
 # Polling configuration.
 POLL_INTERVAL = 10        # seconds between list_torrents() calls
 DOWNLOAD_TIMEOUT = 600    # seconds to wait for progress to reach 100 %
-SYNC_TIMEOUT = 300        # seconds to wait for in_cache to become True
+SYNC_TIMEOUT = 300        # seconds to wait for cloud-storage sync signal
 
 
 # ---------------------------------------------------------------------------
@@ -190,18 +192,24 @@ def main() -> int:
         )
         log.info("Download complete (progress = 100 %%).")
 
-        # ---- 4. Wait for in_cache (data synced to cloud storage) ---------
+        # ---- 4. Wait for sync to cloud storage ---------------------------
+        # The API signals a completed sync via EITHER of two mechanisms:
+        #   • in_cache=True  — explicit boolean flag set by some plan types
+        #   • 'c' in status  — status code that appears once the seedbox has
+        #                       moved the data to permanent cloud storage
+        # Both are treated as success; checking only in_cache caused timeouts
+        # on accounts where that flag is never set but 'c' reliably appears.
         log.info(
             "Waiting for data to sync to cloud storage (timeout %d s) …", SYNC_TIMEOUT
         )
         poll_until(
             sb,
             test_hash,
-            lambda t: bool(t.in_cache),
+            lambda t: bool(t.in_cache) or "c" in t.status,
             "sync",
             SYNC_TIMEOUT,
         )
-        log.info("Data synchronized to cloud storage (in_cache = True).")
+        log.info("Data synchronized to cloud storage.")
 
         # ---- 5. Verify files appear in cloud file listing ----------------
         log.info("Verifying torrent folder appears in cloud file listing …")
