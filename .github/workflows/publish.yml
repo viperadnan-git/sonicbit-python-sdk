@@ -20,6 +20,7 @@ jobs:
 
         permissions:
             id-token: write
+            contents: write
 
         steps:
             - name: Checkout code
@@ -36,11 +37,13 @@ jobs:
             - name: Publish to Test PyPI
               uses: pypa/gh-action-pypi-publish@release/v1
               with:
-                  password: ${{ secrets.TEST_PYPI_API_TOKEN }}
                   repository-url: https://test.pypi.org/legacy/
                   skip-existing: true
 
             - name: Publish to PyPI
               uses: pypa/gh-action-pypi-publish@release/v1
-              with:
-                  password: ${{ secrets.PYPI_API_TOKEN }}
+
+            - name: Create GitHub release
+              run: gh release create ${{ github.ref_name }} --generate-notes
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
