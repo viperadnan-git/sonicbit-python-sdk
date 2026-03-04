@@ -58,14 +58,12 @@ class Auth(SonicBitBase):
 
         return response
 
-    @staticmethod
-    def login(email: str, password: str) -> AuthResponse:
+    def login(self, email: str, password: str) -> AuthResponse:
         logger.info("Logging in as email=%s", email)
-        response = SonicBitBase._static_request(
+        response = self._request(
             method="POST",
-            url=SonicBitBase.url("/web/login"),
+            url=self.url("/web/login"),
             json={"email": email, "password": password},
-            headers=Constants.API_HEADERS,
         )
 
         return AuthResponse.from_response(response)

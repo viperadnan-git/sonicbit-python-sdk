@@ -14,11 +14,15 @@ class AuthResponse(BaseModel):
 
     @staticmethod
     def from_response(response: Response) -> "AuthResponse":
+        text = response.text
         try:
             json_data = response.json()
         except JSONDecodeError:
             raise InvalidResponseError(
-                f"Server returned invalid JSON data: {response.text}"
+                f"Server returned invalid JSON "
+                f"(HTTP {response.status_code}, "
+                f"Content-Type={response.headers.get('content-type', 'unknown')}, "
+                f"Content-Length={len(text)}): {text[:200]}"
             ) from None
 
         if success_data := json_data.get("success", False):
