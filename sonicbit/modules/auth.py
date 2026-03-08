@@ -29,6 +29,7 @@ class Auth(SonicBitBase):
             token = self._get_token()
 
         self.session.headers.update({"Authorization": f"Bearer {token}"})
+        self._authenticate_session()
 
     def _get_token(self) -> str:
         logger.debug("Retrieving token for email=%s", self._email)
@@ -45,7 +46,26 @@ class Auth(SonicBitBase):
         self._token_handler.write(self._email, auth)
         token = auth.token
         self.session.headers.update({"Authorization": f"Bearer {token}"})
+        self._authenticate_session()
         return token
+
+    def _authenticate_session(self):
+        """Perform a session-based login to store the web session cookie
+        (e.g. sonicbit_session) in the shared cookie jar. This is required
+        by endpoints like /api/file-manager that rely on the cookie rather
+        than the Bearer token alone."""
+        logger.debug("Authenticating web session for email=%s", self._email)
+        response = self.session.post(
+            self.url("/web/login"),
+            json={"email": self._email, "password": self._password},
+        )
+        if response.status_code != 200:
+            logger.warning(
+                "Web session authentication failed for email=%s: %s %s",
+                self._email,
+                response.status_code,
+                response.reason_phrase,
+            )
 
     def _request(self, *args, **kwargs):
         response = super()._request(*args, **kwargs)
@@ -58,12 +78,14 @@ class Auth(SonicBitBase):
 
         return response
 
-    def login(self, email: str, password: str) -> AuthResponse:
+    @staticmethod
+    def login(email: str, password: str) -> AuthResponse:
         logger.info("Logging in as email=%s", email)
-        response = self._request(
+        response = SonicBitBase._static_request(
             method="POST",
-            url=self.url("/web/login"),
+            url=SonicBitBase.url("/web/login"),
             json={"email": email, "password": password},
+            headers=Constants.API_HEADERS,
         )
 
         return AuthResponse.from_response(response)

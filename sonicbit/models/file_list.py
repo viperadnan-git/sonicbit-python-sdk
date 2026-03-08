@@ -18,16 +18,10 @@ class FileList(BaseModel):
 
     @staticmethod
     def from_response(client: SonicBitBase, response: Response) -> "FileList":
-        text = response.text
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise InvalidResponseError(
-                f"Server returned invalid JSON "
-                f"(HTTP {response.status_code}, "
-                f"Content-Type={response.headers.get('content-type', 'unknown')}, "
-                f"Content-Length={len(text)}): {text[:200]}"
-            ) from None
+            raise InvalidResponseError.from_response(response) from None
 
         result = json_data.get("result", [])
         items = [File.from_dict(client, item) for item in result]
