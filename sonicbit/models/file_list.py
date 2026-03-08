@@ -21,9 +21,7 @@ class FileList(BaseModel):
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise InvalidResponseError(
-                f"Server returned invalid JSON data: {response.text}"
-            ) from None
+            raise InvalidResponseError.from_response(response) from None
 
         result = json_data.get("result", [])
         items = [File.from_dict(client, item) for item in result]

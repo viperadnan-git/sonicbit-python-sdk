@@ -17,9 +17,7 @@ class AuthResponse(BaseModel):
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise InvalidResponseError(
-                f"Server returned invalid JSON data: {response.text}"
-            ) from None
+            raise InvalidResponseError.from_response(response) from None
 
         if success_data := json_data.get("success", False):
             return AuthResponse(
