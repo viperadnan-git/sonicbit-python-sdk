@@ -1,16 +1,16 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class FileCommand(str, Enum):
+class FileCommand(StrEnum):
     GET_DIR_CONTENTS = "GetDirContents"
     REMOVE = "Remove"
 
 
-class TorrentCommand(str, Enum):
+class TorrentCommand(StrEnum):
     ADD_TORRENT_URL = "addTorrentByURL"
     DELETE_TORRENT = "deleteTorrent"
     UPLOAD_TORRENT_FILE = "UploadTorrentFile"
 
 
-class RemoteDownloadCommand(str, Enum):
+class RemoteDownloadCommand(StrEnum):
     LIST_REMOTE_DOWNLOADS = "get_rdl_task_list"
