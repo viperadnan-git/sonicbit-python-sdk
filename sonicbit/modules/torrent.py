@@ -44,12 +44,11 @@ class Torrent(SonicBitBase):
             ) from None
 
         added_torrents = []
-        if json_data["success"]:
-            for index in json_data["added"]:
-                added_torrents.append(uri[index])
+        for index in json_data["added"]:
+            added_torrents.append(uri[index])
 
-        if len(added_torrents) == 0:
-            raise SonicBitError("Failed to add torrent")
+        if len(added_torrents) == 0 and not bool(json_data["success"]):
+            raise SonicBitError(f"Failed to add torrent: {json_data}")
 
         return added_torrents
 
@@ -95,6 +94,8 @@ class Torrent(SonicBitBase):
 
         if not json_data["success"]:
             raise SonicBitError("Failed to add torrent: {}".format(json_data["msg"]))
+
+        logger.debug(f"Torrent file uploaded successfully: {json_data}")
 
         return True
 
