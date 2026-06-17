@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 
 class TorrentInfo(BaseModel):
-    download_rate: int
-    upload_rate: str
+    download_rate: float
+    upload_rate: float
     size_byte_total: int
     size_byte_limit: int
     percent: float

@@ -44,12 +44,11 @@ class Torrent(SonicBitBase):
             ) from None
 
         added_torrents = []
-        if json_data["success"]:
-            for index in json_data["added"]:
-                added_torrents.append(uri[index])
+        for index in json_data["added"]:
+            added_torrents.append(uri[index])
 
-        if len(added_torrents) == 0:
-            raise SonicBitError("Failed to add torrent")
+        if len(added_torrents) == 0 and not bool(json_data["success"]):
+            raise SonicBitError(f"Failed to add torrent: {json_data}")
 
         return added_torrents
 
@@ -96,6 +95,8 @@ class Torrent(SonicBitBase):
         if not json_data["success"]:
             raise SonicBitError("Failed to add torrent: {}".format(json_data["msg"]))
 
+        logger.debug(f"Torrent file uploaded successfully: {json_data}")
+
         return True
 
     def list_torrents(self) -> TorrentList:
@@ -119,16 +120,16 @@ class Torrent(SonicBitBase):
         return TorrentDetails.from_response(response)
 
     def delete_torrent(
-        self, hash: str | List[str], with_file: bool = False
+        self, _hash: str | List[str], with_file: bool = False
     ) -> List[str]:
-        logger.debug("Deleting torrent hash=%s with_file=%s", hash, with_file)
+        logger.debug("Deleting torrent hash=%s with_file=%s", _hash, with_file)
 
-        if isinstance(hash, str):
-            hash = [hash]
+        if isinstance(_hash, str):
+            _hash = [_hash]
 
         params = {
             "command": TorrentCommand.DELETE_TORRENT,
-            "hash_list[]": hash,
+            "hash_list[]": _hash,
             "with_file": 1 if with_file else 0,
         }
         params.update(self.get_time_params())
