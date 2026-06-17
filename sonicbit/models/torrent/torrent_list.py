@@ -42,7 +42,7 @@ class TorrentList(BaseModel):
                     hash=torrent_data["hash"],
                     size=int(torrent_data["sizeBytes"]),
                     progress=int(torrent_data["percentComplete"]),
-                    download_rate_value=torrent_data["dlRateValue"],
+                    download_rate_value=float(torrent_data["dlRateValue"]),
                     download_rate_unit=torrent_data["dlRateUnit"],
                     upload_rate_value=(
                         torrent_data["upRateValue"]
@@ -67,8 +67,8 @@ class TorrentList(BaseModel):
             torrents = {}
 
         info = TorrentInfo(
-            download_rate=int(info_data["downloadRate"]),
-            upload_rate=info_data["uploadRate"],
+            download_rate=float(info_data["downloadRate"]),
+            upload_rate=float(info_data["uploadRate"]),
             size_byte_total=int(info_data["sizeByteTotal"]),
             size_byte_limit=int(info_data["sizeByteLimit"]),
             percent=float(info_data["percent"]),
