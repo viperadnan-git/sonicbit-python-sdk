@@ -120,16 +120,16 @@ class Torrent(SonicBitBase):
         return TorrentDetails.from_response(response)
 
     def delete_torrent(
-        self, hash: str | List[str], with_file: bool = False
+        self, _hash: str | List[str], with_file: bool = False
     ) -> List[str]:
-        logger.debug("Deleting torrent hash=%s with_file=%s", hash, with_file)
+        logger.debug("Deleting torrent hash=%s with_file=%s", _hash, with_file)
 
-        if isinstance(hash, str):
-            hash = [hash]
+        if isinstance(_hash, str):
+            _hash = [_hash]
 
         params = {
             "command": TorrentCommand.DELETE_TORRENT,
-            "hash_list[]": hash,
+            "hash_list[]": _hash,
             "with_file": 1 if with_file else 0,
         }
         params.update(self.get_time_params())
