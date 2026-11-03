@@ -31,10 +31,7 @@ class TorrentFile(BaseModel):
     def from_dict(data: dict, torrent_name: str = "") -> "TorrentFile":
         name = data.get("name") or data.get("filename") or ""
         dl_url = (
-            data.get("dlurl")
-            or data.get("dl_url")
-            or data.get("downloadUrl")
-            or ""
+            data.get("dlurl") or data.get("dl_url") or data.get("downloadUrl") or ""
         )
         if not dl_url and data.get("drive_path"):
             dl_url = Constants.FILES_BASE_URL + data["drive_path"]

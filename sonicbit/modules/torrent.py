@@ -41,7 +41,9 @@ class Torrent(SonicBitBase):
             ) from None
 
         if not json_data.get("ok", False):
-            raise SonicBitError(f"Failed to add torrent: {json_data.get('msg', json_data)}")
+            raise SonicBitError(
+                f"Failed to add torrent: {json_data.get('msg', json_data)}"
+            )
 
         return list(uri)
 
@@ -94,7 +96,9 @@ class Torrent(SonicBitBase):
             ) from None
 
         if not json_data.get("ok", False):
-            raise SonicBitError(f"Failed to add torrent: {json_data.get('msg', json_data)}")
+            raise SonicBitError(
+                f"Failed to add torrent: {json_data.get('msg', json_data)}"
+            )
 
         logger.debug("Torrent file uploaded successfully: %s", json_data)
         return True

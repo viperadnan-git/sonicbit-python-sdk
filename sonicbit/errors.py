@@ -14,7 +14,9 @@ class InvalidResponseError(SonicBitError):
     @classmethod
     def from_response(cls, response, message: str = "Server returned invalid JSON"):
         """Build an InvalidResponseError with diagnostic context from an HTTP response."""
-        reason = getattr(response, "reason_phrase", None) or getattr(response, "reason", "")
+        reason = getattr(response, "reason_phrase", None) or getattr(
+            response, "reason", ""
+        )
         return cls(
             f"{message}: {response.status_code} {reason} "
             f"content-type={response.headers.get('content-type', 'none')} "
