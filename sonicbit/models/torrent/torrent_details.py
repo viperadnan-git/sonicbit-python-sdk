@@ -1,7 +1,6 @@
 from json import JSONDecodeError
 from typing import List
 
-from httpx import Response
 from pydantic import BaseModel, Field
 
 from sonicbit.errors import InvalidResponseError, SonicBitError
@@ -9,11 +8,19 @@ from sonicbit.models.torrent.torrent_file import TorrentFile
 
 
 class TorrentDetails(BaseModel):
+    """Torrent file list from ``POST /api/seedbox/details``.
+
+    Payload: ``{"ok": bool, "files": [...], "trackers": [...]}``. A torrent
+    whose metadata has not resolved yet returns ``ok=false`` with empty
+    lists — surfaced as an empty details object rather than an error.
+    """
+
     files: List[TorrentFile]
-    raw: list = Field(exclude=True)
+    trackers: List[dict] = Field(default_factory=list)
+    raw: dict = Field(exclude=True)
 
     @staticmethod
-    def from_response(response: Response) -> "TorrentDetails":
+    def from_response(response, torrent_name: str = "") -> "TorrentDetails":
         try:
             json_data = response.json()
         except JSONDecodeError:
@@ -21,28 +28,20 @@ class TorrentDetails(BaseModel):
                 f"Server returned invalid JSON data: {response.text}"
             ) from None
 
-        if "message" in json_data:
-            error_message = json_data["message"]
-            raise SonicBitError(f"Failed to get torrent details: {error_message}")
+        if msg := json_data.get("msg"):
+            raise SonicBitError(f"Failed to get torrent details: {msg}")
+
+        if "files" not in json_data:
+            raise SonicBitError(
+                f"Unexpected torrent details response: {str(json_data)[:200]}"
+            )
 
         return TorrentDetails(
             files=[
-                TorrentFile(
-                    name=file_data["filename"],
-                    size=file_data["sizeBytes"],
-                    torrent_path=file_data["tor_path"],
-                    torrent_name=file_data["name"],
-                    file_path=file_data["mydrive_path"],
-                    progress=file_data["percentComplete"],
-                    extension=file_data["ext"],
-                    priority=file_data["priority"],
-                    index=file_data["index"],
-                    download_url=file_data["dl_url"],
-                    hash_code=file_data["hash_code"],
-                    raw=file_data,
-                )
-                for file_data in json_data
+                TorrentFile.from_dict(f, torrent_name=torrent_name)
+                for f in json_data.get("files") or []
             ],
+            trackers=list(json_data.get("trackers") or []),
             raw=json_data,
         )
 

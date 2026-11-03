@@ -1,45 +1,57 @@
 from json import JSONDecodeError
 
-from httpx import Response
 from pydantic import BaseModel, Field
 
 from sonicbit.errors import InvalidResponseError, SonicBitError
 
 
 class StorageDetails(BaseModel):
-    size_byte_total: int
-    size_byte_limit: int
-    set_storage_left: int
+    """Storage usage from ``GET /api/storage/details``.
+
+    New payload: ``{"usedBytes": .., "totalBytes": .., "stats": {..}, "breakdown": []}``.
+    Legacy field names are kept as properties for backwards compatibility
+    (``size_byte_total`` was the *used* byte count in the old API).
+    """
+
+    used_bytes: int
+    total_bytes: int
     percent: float
-    max_parallel: int
-    show_notice: bool
+    stats: dict = Field(default_factory=dict)
+    breakdown: list = Field(default_factory=list)
     raw: dict = Field(exclude=True)
 
     @staticmethod
-    def from_response(response: Response) -> "StorageDetails":
+    def from_response(response) -> "StorageDetails":
         try:
             json_data = response.json()
         except JSONDecodeError:
-            raise InvalidResponseError(
-                f"Server returned invalid JSON data: {response.text}"
-            ) from None
+            raise InvalidResponseError.from_response(response) from None
 
-        if error_message := json_data.get("message"):
-            raise SonicBitError(f"Failed to get storage details: {error_message}")
+        if msg := json_data.get("msg"):
+            raise SonicBitError(f"Failed to get storage details: {msg}")
 
-        data = json_data.get("data")
-        if not data:
-            raise SonicBitError("Invalid response: 'data' key not found.")
+        used = int(json_data.get("usedBytes", 0))
+        total = int(json_data.get("totalBytes", 0))
+        percent = round(used / total * 100, 2) if total else 0.0
 
         return StorageDetails(
-            size_byte_total=data["sizeByteTotal"],
-            size_byte_limit=data["sizeByteLimit"],
-            set_storage_left=data["setStorageleft"],
-            percent=data["percent"],
-            max_parallel=data["max_prallel"],
-            show_notice=data["showNotice"],
-            raw=data,
+            used_bytes=used,
+            total_bytes=total,
+            percent=percent,
+            stats=json_data.get("stats", {}),
+            breakdown=json_data.get("breakdown", []),
+            raw=json_data,
         )
+
+    @property
+    def size_byte_total(self) -> int:
+        """Legacy alias for :attr:`used_bytes` (old API semantics)."""
+        return self.used_bytes
+
+    @property
+    def size_byte_limit(self) -> int:
+        """Legacy alias for :attr:`total_bytes`."""
+        return self.total_bytes
 
     def __str__(self):
         return self.model_dump_json(indent=4)
