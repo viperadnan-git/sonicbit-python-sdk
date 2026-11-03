@@ -1,18 +1,26 @@
 class Constants:
-    API_DOMAIN = "v6.sonicbit.net"
+    """SonicBit API constants (2026-11 platform: my.sonicbit.net).
+
+    The legacy ``v6.sonicbit.net`` API was retired; all endpoints now live on
+    the web app origin. The API is protected by TLS-fingerprint filtering —
+    non-browser TLS stacks (plain httpx/requests/curl) receive
+    ``403 {"msg": "This app isn't supported..."}`` — so every request MUST go
+    through a curl_cffi session with browser impersonation.
+    """
+
     API_ORIGIN = "https://my.sonicbit.net"
-    API_REFERER = "https://my.sonicbit.net/"
-    API_BASE_URL = f"https://{API_DOMAIN}/api"
+    API_BASE_URL = f"{API_ORIGIN}/api"
+    FILES_BASE_URL = "https://files.sonicbit.net/dl"
 
-    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15"
+    # curl_cffi impersonation target used for every request (see module docstring).
+    IMPERSONATE = "chrome136"
 
+    # Impersonation already sends browser-like Accept/UA headers; only the
+    # same-origin web-app headers are added explicitly.
     API_HEADERS = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-IN,en-GB;q=0.9,en;q=0.8",
-        "Connection": "keep-alive",
-        "Host": API_DOMAIN,
         "Origin": API_ORIGIN,
-        "Referer": API_REFERER,
-        "User-Agent": USER_AGENT,
+        "Referer": f"{API_ORIGIN}/",
     }
+
+    # Session cookie set by /auth/login and required by every other endpoint.
+    SESSION_COOKIE = "sb_jwt"

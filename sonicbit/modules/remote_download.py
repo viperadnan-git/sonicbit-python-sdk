@@ -1,7 +1,6 @@
 import logging
 
 from sonicbit.base import SonicBitBase
-from sonicbit.enums import RemoteDownloadCommand
 from sonicbit.errors import SonicBitError
 from sonicbit.models import RemoteTaskList
 from sonicbit.models.path_info import PathInfo
@@ -10,16 +9,19 @@ logger = logging.getLogger(__name__)
 
 
 class RemoteDownload(SonicBitBase):
-    def add_remote_download(self, url: str, path: PathInfo) -> bool:
+    def add_remote_download(self, url: str, path: PathInfo | None = None) -> bool:
+        if path is None:
+            path = PathInfo.root()
+
         logger.debug("Adding remote download url=%s path=%s", url, path.path)
 
         json_data = self._request(
             method="POST",
-            url=self.url("/remote_download/task/add"),
+            url=self.url("/remote-download/add"),
             json={"url": url, "path": path.path},
         ).json()
 
-        if not json_data.get("success", False):
+        if not json_data.get("ok", False):
             raise SonicBitError(
                 f"Failed to add remote download: {json_data.get('msg')}"
             )
@@ -30,9 +32,7 @@ class RemoteDownload(SonicBitBase):
         logger.debug("Listing all remote downloads")
 
         response = self._request(
-            method="POST",
-            url=self.url("/remote_download/task/list"),
-            params={"action": RemoteDownloadCommand.LIST_REMOTE_DOWNLOADS},
+            method="GET", url=self.url("/remote-download/list")
         )
 
         return RemoteTaskList.from_response(self, response)
@@ -42,11 +42,11 @@ class RemoteDownload(SonicBitBase):
 
         json_data = self._request(
             method="POST",
-            url=self.url("/remote_download/task/delete"),
+            url=self.url("/remote-download/delete"),
             json={"task_id": id},
         ).json()
 
-        if not json_data.get("success", False):
+        if not json_data.get("ok", False):
             raise SonicBitError(
                 f"Failed to delete remote download: {json_data.get('msg')}"
             )

@@ -1,9 +1,7 @@
-import json
 import logging
 from json import JSONDecodeError
 
 from sonicbit.base import SonicBitBase
-from sonicbit.enums import FileCommand
 from sonicbit.errors import InvalidResponseError
 from sonicbit.models import File as FileType
 from sonicbit.models import FileList, PathInfo
@@ -12,37 +10,40 @@ logger = logging.getLogger(__name__)
 
 
 class File(SonicBitBase):
-    def list_files(self, path: PathInfo = PathInfo.root()) -> FileList:
+    def list_files(self, path: PathInfo | None = None) -> FileList:
+        """List My Drive contents via ``POST /api/drive/list``."""
+        if path is None:
+            path = PathInfo.root()
+
         logger.debug("Listing files path=%s", path.path)
-        params = {
-            "arguments": json.dumps({"pathInfo": path.serialized}),
-            "command": FileCommand.GET_DIR_CONTENTS,
-        }
 
         response = self._request(
-            method="GET", url=self.url("/file-manager"), params=params
+            method="POST", url=self.url("/drive/list"), json={"path": path.path}
         )
         return FileList.from_response(self, response)
 
     def delete_file(
         self, file: FileType | PathInfo, is_directory: bool = False
     ) -> bool:
+        """Delete a My Drive item via ``POST /api/drive/delete``."""
+        inode = None
         if isinstance(file, FileType):
             is_directory = file.is_directory
+            inode = file.raw.get("in")
             file = file.path_info
+
         logger.debug("Deleting file path=%s is_directory=%s", file.path, is_directory)
-        data = {
-            "arguments": json.dumps(
-                {"pathInfo": file.serialized, "isDirectory": is_directory}
-            ),
-            "command": FileCommand.REMOVE,
-        }
+
+        item = {"pathInfo": file.serialized, "isDirectory": is_directory}
+        if inode is not None:
+            item["in"] = inode
 
         response = self._request(
-            method="POST", url=self.url("/file-manager"), data=data
+            method="POST", url=self.url("/drive/delete"), json={"items": [item]}
         )
         try:
             json_data = response.json()
         except JSONDecodeError:
             raise InvalidResponseError.from_response(response) from None
-        return json_data.get("success", False)
+
+        return bool(json_data.get("success") or json_data.get("ok"))

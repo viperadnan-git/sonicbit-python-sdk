@@ -1,7 +1,6 @@
 from json import JSONDecodeError
 from typing import List
 
-from httpx import Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from sonicbit.base import SonicBitBase
@@ -17,7 +16,7 @@ class FileList(BaseModel):
     raw: list = Field(exclude=True)
 
     @staticmethod
-    def from_response(client: SonicBitBase, response: Response) -> "FileList":
+    def from_response(client: SonicBitBase, response) -> "FileList":
         try:
             json_data = response.json()
         except JSONDecodeError:

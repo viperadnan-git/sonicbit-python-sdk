@@ -23,12 +23,12 @@ class Signup(SonicBitBase):
         logger.debug("Signing up name=%s email=%s", name, email)
         response = SonicBitBase._static_request(
             method="POST",
-            url=SonicBitBase.url("/user/register"),
+            url=SonicBitBase.url("/auth/register"),
             json=data,
             headers=Constants.API_HEADERS,
         ).json()
 
-        if response.get("success") == True:
+        if response.get("ok", response.get("success")) == True:
             if otp_callback:
                 otp = otp_callback(email)
                 return Signup.submit_otp(otp)
@@ -55,7 +55,7 @@ class Signup(SonicBitBase):
             headers=Constants.API_HEADERS,
         ).json()
 
-        if response.get("success") == True:
+        if response.get("ok", response.get("success")) == True:
             token = response["data"]["token"]
             Signup._complete_tutorial(token)
             return token
@@ -80,7 +80,7 @@ class Signup(SonicBitBase):
             headers=headers,
         ).json()
 
-        if response.get("success") == True:
+        if response.get("ok", response.get("success")) == True:
             return True
         else:
             raise SonicBitError(
